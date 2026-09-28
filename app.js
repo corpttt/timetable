@@ -1,8 +1,8 @@
-/* Б84 schedule PWA */
+/* Schedule PWA */
 (function () {
   const TZ = "Europe/Moscow";
   const DATA_URL = "./schedule.json";
-  const CACHE_KEY = "b84-schedule-cache-v1";
+  const CACHE_KEY = "schedule-cache-v1";
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];

@@ -1,4 +1,4 @@
-const CACHE = "b84-shell-v5";
+const CACHE = "schedule-shell-v1";
 const SHELL = [
   "./",
   "./index.html",

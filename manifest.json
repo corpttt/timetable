@@ -1,10 +1,10 @@
 {
-  "id": "/b84-schedule/",
-  "name": "Б84 · расписание",
-  "short_name": "Б84",
-  "description": "Расписание группы 26.Б84-мм с ближайшей парой",
-  "start_url": "/b84-schedule/",
-  "scope": "/b84-schedule/",
+  "id": "/timetable/",
+  "name": "Расписание",
+  "short_name": "Расписание",
+  "description": "Личное расписание пар",
+  "start_url": "/timetable/",
+  "scope": "/timetable/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#010409",
@@ -12,25 +12,25 @@
   "lang": "ru",
   "icons": [
     {
-      "src": "/b84-schedule/icons/icon-192.png",
+      "src": "/timetable/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/b84-schedule/icons/icon-512.png",
+      "src": "/timetable/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/b84-schedule/icons/icon-192.png",
+      "src": "/timetable/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/b84-schedule/icons/icon-512.png",
+      "src": "/timetable/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
