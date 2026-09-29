@@ -1,11 +1,11 @@
-const CACHE = "schedule-shell-v10";
+const CACHE = "schedule-shell-v11";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css",
-  "./styles.css?v=10",
+  "./styles.css?v=11",
   "./app.js",
-  "./app.js?v=10",
+  "./app.js?v=11",
   "./manifest.json",
   "./schedule.json",
   "./favicon.ico",
