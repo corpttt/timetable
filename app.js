@@ -201,10 +201,9 @@
     if (address && !address.match(/[А-Яа-яЁё]/)) address = null;
     if (instructor && !instructor.match(/[А-Яа-яЁё]/)) instructor = null;
 
-    const restParts = extraLines.filter(line => {
-      if (/фактическое\s+время/i.test(line)) return true;
-      return false;
-    });
+    const restParts = extraLines.filter(
+      (line) => !/фактическое\s+время/i.test(line)
+    );
     remaining = restParts.join(" · ") || "";
 
     return { room, address, instructor, rest: remaining, soft: false };
@@ -217,17 +216,17 @@
         ? "ауд. ?"
         : room
       : `ауд. ${room}`;
-    return `<span class="chip chip-room" title="Аудитория">📍 ${escapeHtml(label)}</span>`;
+    return `<span class="chip chip-room" title="Аудитория">${escapeHtml(label)}</span>`;
   }
 
   function addressChip(address) {
     if (!address) return "";
-    return `<span class="chip chip-address" title="Адрес">🏛 ${escapeHtml(address)}</span>`;
+    return `<span class="chip chip-address" title="Адрес">${escapeHtml(address)}</span>`;
   }
 
   function instructorChip(instructor) {
     if (!instructor) return "";
-    return `<span class="chip chip-instructor" title="Преподаватель">👤 ${escapeHtml(instructor)}</span>`;
+    return `<span class="chip chip-instructor" title="Преподаватель">${escapeHtml(instructor)}</span>`;
   }
 
   function renderNowHint(nearest) {
@@ -635,7 +634,7 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=6").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=7").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }
