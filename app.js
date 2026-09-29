@@ -596,7 +596,9 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    navigator.serviceWorker.register("./sw.js?v=5").then((reg) => {
+      reg.update().catch(() => {});
+    }).catch(() => {});
   }
 
   document.addEventListener("DOMContentLoaded", () => {
