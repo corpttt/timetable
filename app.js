@@ -2,8 +2,8 @@
 (function () {
   const TZ = "Europe/Moscow";
   const DATA_URL = "./schedule.json";
-  const CACHE_KEY = "schedule-cache-v2";
-  const CACHE_KEYS_LEGACY = ["schedule-cache-v1", "b84-schedule-cache-v1"];
+  const CACHE_KEY = "schedule-cache-v3";
+  const CACHE_KEYS_LEGACY = ["schedule-cache-v2", "schedule-cache-v1", "b84-schedule-cache-v1"];
   const SPBU_GROUP = 459575;
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -148,39 +148,66 @@
 
   function parseMeta(meta) {
     const text = String(meta || "").trim();
-    if (!text) return { room: null, rest: "", soft: false };
+    if (!text) return { room: null, address: null, instructor: null, rest: "", soft: false };
 
-    if (/аудитори[яи]\s+уточняется/i.test(text)) {
-      const rest = text
-        .replace(/аудитори[яи]\s+уточняется/gi, "")
-        .replace(/^[\s·,;]+|[\s·,;]+$/g, "")
-        .trim();
-      return { room: "уточняется", rest, soft: true };
+    const lines = text.split(/\n/).map(s => s.trim()).filter(Boolean);
+    const mainLine = lines[0];
+    const extraLines = lines.slice(1);
+
+    if (/аудитори[яи]\s+уточняется/i.test(mainLine)) {
+      const rest = [
+        mainLine.replace(/аудитори[яи]\s+уточняется/gi, "").replace(/^[\s·,;]+|[\s·,;]+$/g, "").trim(),
+        ...extraLines
+      ].filter(Boolean).join(" · ");
+      return { room: "уточняется", address: null, instructor: null, rest, soft: true };
     }
 
-    if (/аудитори[яи].{0,40}по\s+подгрупп/i.test(text)) {
-      const rest = text
-        .replace(/аудитори[яи]\s+и\s+преподаватель\s*[—–\-]?\s*по\s+подгрупп\w*/gi, "")
-        .replace(/^[\s·,;]+|[\s·,;]+$/g, "")
-        .trim();
-      return { room: "по подгруппе", rest, soft: true };
+    if (/аудитори[яи].{0,40}по\s+подгрупп/i.test(mainLine)) {
+      const rest = [
+        mainLine.replace(/аудитори[яи]\s+и\s+преподаватель\s*[—–\-]?\s*по\s+подгрупп\w*/gi, "").replace(/^[\s·,;]+|[\s·,;]+$/g, "").trim(),
+        ...extraLines
+      ].filter(Boolean).join(" · ");
+      return { room: "по подгруппе", address: null, instructor: null, rest, soft: true };
     }
 
-    const aud = /(?:^|[\s·,;])ауд\.\s*([^\s·,;]+)/i.exec(text);
-    if (aud) {
-      const room = aud[1].replace(/[.,;]+$/, "");
-      const rest = text
-        .replace(/(?:^|[\s·,;])ауд\.\s*[^\s·,;]+/i, (m) =>
-          m[0] === "а" || m[0] === "А" ? "" : m[0]
-        )
-        .replace(/^[\s·,;]+|[\s·,;]+$/g, "")
-        .replace(/\s*[·]\s*/g, " · ")
-        .replace(/\s{2,}/g, " ")
-        .trim();
-      return { room, rest, soft: false };
+    let room = null;
+    let address = null;
+    let instructor = null;
+    let remaining = mainLine;
+
+    const parts = mainLine.split(/\s*·\s*/);
+    const beforeDot = parts[0] || "";
+    const afterDot = parts.slice(1).join(" · ");
+
+    const audMatch = /ауд\.\s*([^\s·,;]+)/i.exec(beforeDot);
+    if (audMatch) {
+      room = audMatch[1].replace(/[.,;]+$/, "");
+      const cleaned = beforeDot.replace(/ауд\.\s*[^\s·,;]+/i, "").trim();
+      address = cleaned.replace(/^[,;·\s]+|[,;·\s]+$/g, "").trim() || null;
+      instructor = afterDot.trim() || null;
+    } else {
+      const namePattern = /^([А-ЯЁ][а-яё]+(?:\s+[А-ЯЁ]\.(?:\s*[А-ЯЁ]\.)?)?(?:\s*;\s*[А-ЯЁ][а-яё]+(?:\s+[А-ЯЁ]\.(?:\s*[А-ЯЁ]\.)?)?)*)\s*$/;
+      const nameMatch = namePattern.exec(beforeDot.trim());
+      
+      if (nameMatch) {
+        instructor = nameMatch[1];
+        address = afterDot.trim() || null;
+      } else {
+        address = beforeDot.trim() || null;
+        instructor = afterDot.trim() || null;
+      }
     }
 
-    return { room: null, rest: text, soft: false };
+    if (address && !address.match(/[А-Яа-яЁё]/)) address = null;
+    if (instructor && !instructor.match(/[А-Яа-яЁё]/)) instructor = null;
+
+    const restParts = extraLines.filter(line => {
+      if (/фактическое\s+время/i.test(line)) return true;
+      return false;
+    });
+    remaining = restParts.join(" · ") || "";
+
+    return { room, address, instructor, rest: remaining, soft: false };
   }
 
   function roomChip(room, soft) {
@@ -190,7 +217,17 @@
         ? "ауд. ?"
         : room
       : `ауд. ${room}`;
-    return `<span class="chip chip-room" title="Аудитория">${escapeHtml(label)}</span>`;
+    return `<span class="chip chip-room" title="Аудитория">📍 ${escapeHtml(label)}</span>`;
+  }
+
+  function addressChip(address) {
+    if (!address) return "";
+    return `<span class="chip chip-address" title="Адрес">🏛 ${escapeHtml(address)}</span>`;
+  }
+
+  function instructorChip(instructor) {
+    if (!instructor) return "";
+    return `<span class="chip chip-instructor" title="Преподаватель">👤 ${escapeHtml(instructor)}</span>`;
   }
 
   function renderNowHint(nearest) {
@@ -247,7 +284,7 @@
     start,
     end,
   }) {
-    const { room, rest, soft } = parseMeta(meta);
+    const { room, address, instructor, rest, soft } = parseMeta(meta);
     let cls = "tl-item";
     if (nearestKind === "now" && nearestKey === id) cls += " current";
     if (nearestKind === "next" && nearestKey === id) cls += " next-pair";
@@ -263,6 +300,8 @@
       <div class="subj">${escapeHtml(name)}</div>
       <div class="tl-chips">
         ${roomChip(room, soft)}
+        ${addressChip(address)}
+        ${instructorChip(instructor)}
         ${rest ? `<span class="chip">${escapeHtml(rest)}</span>` : ""}
       </div>
     </article>`;
@@ -596,7 +635,7 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=5").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=6").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }
