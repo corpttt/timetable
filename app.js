@@ -251,14 +251,11 @@
     let cls = "tl-item";
     if (nearestKind === "now" && nearestKey === id) cls += " current";
     if (nearestKind === "next" && nearestKey === id) cls += " next-pair";
-    if (sync === "local-only" || sync === "spbu-only") cls += " mismatch";
-    if (sync === "spbu-only") cls += " spbu-only";
+    if (sync === "spbu-only") cls += " mismatch spbu-only";
     const syncBadge =
-      sync === "local-only"
-        ? '<span class="badge badge-mismatch" title="Есть у нас, нет на Timetable SPbU">только у нас</span>'
-        : sync === "spbu-only"
-          ? '<span class="badge badge-mismatch" title="Есть на Timetable SPbU, нет у нас">только Timetable</span>'
-          : "";
+      sync === "spbu-only"
+        ? '<span class="badge badge-mismatch" title="Есть в Timetable Б84, нет в нашем файле">Timetable</span>'
+        : "";
     return `<article class="${cls}" id="${id}" style="--c:${color}"
       data-start="${escapeHtml(start || "")}" data-end="${escapeHtml(end || "")}" data-kind="${kind || "local"}">
       <span class="tl-dot" aria-hidden="true"></span>
@@ -486,7 +483,7 @@
       : "—";
     const sync = state.data?.syncStats;
     const syncTxt = sync
-      ? `<span title="сверка с Timetable SPbU">SPbU: ✓${sync.matched} · ✗у нас ${sync.localOnly} · ✗там ${sync.spbuOnly}</span>`
+      ? `<span title="пары из Timetable Б84, которых нет у нас">Timetable ∆: ${sync.spbuOnly || 0}</span>`
       : "";
     $("#status-line").innerHTML = `
       <span>Сейчас: ${escapeHtml(now.label)}</span>
