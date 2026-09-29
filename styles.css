@@ -312,8 +312,14 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   margin-top: 0.45rem;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+}
+.tl-chips::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .tl-item.mismatch {
