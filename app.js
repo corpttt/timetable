@@ -146,34 +146,45 @@
     return map;
   }
 
+  function shortenAddress(address) {
+    let a = String(address || "").trim().replace(/\s*·\s*$/, "");
+    if (!a) return null;
+    if (/14[-‑]?я\s+линия/i.test(a)) return "СПб ФИЦ РАН";
+    if (/университетский\s+пр/i.test(a)) {
+      const n = a.match(/(\d+)/);
+      return n ? `Унив. пр. ${n[1]}` : "Унив. пр.";
+    }
+    // «Матмех, лит. Б» уже коротко
+    a = a.replace(/^Матмех\s*,\s*лит\.\s*/i, "Матмех ");
+    return a;
+  }
+
   function parseMeta(meta) {
     const text = String(meta || "").trim();
     if (!text) return { room: null, address: null, instructor: null, rest: "", soft: false };
 
-    const lines = text.split(/\n/).map(s => s.trim()).filter(Boolean);
+    const lines = text.split(/\n/).map((s) => s.trim()).filter(Boolean);
     const mainLine = lines[0];
     const extraLines = lines.slice(1);
 
-    if (/аудитори[яи]\s+уточняется/i.test(mainLine)) {
-      const rest = [
-        mainLine.replace(/аудитори[яи]\s+уточняется/gi, "").replace(/^[\s·,;]+|[\s·,;]+$/g, "").trim(),
-        ...extraLines
-      ].filter(Boolean).join(" · ");
-      return { room: "уточняется", address: null, instructor: null, rest, soft: true };
+    if (/аудитори[яи]\s+уточняется/i.test(mainLine) || extraLines.some((l) => /аудитори[яи]\s+уточняется/i.test(l))) {
+      const instructorOnly = /^([А-ЯЁ][а-яё]+(?:\s+[А-ЯЁ]\.(?:\s*[А-ЯЁ]\.)?)+)\s*$/.exec(mainLine);
+      return {
+        room: "уточняется",
+        address: null,
+        instructor: instructorOnly ? instructorOnly[1] : null,
+        rest: "",
+        soft: true,
+      };
     }
 
     if (/аудитори[яи].{0,40}по\s+подгрупп/i.test(mainLine)) {
-      const rest = [
-        mainLine.replace(/аудитори[яи]\s+и\s+преподаватель\s*[—–\-]?\s*по\s+подгрупп\w*/gi, "").replace(/^[\s·,;]+|[\s·,;]+$/g, "").trim(),
-        ...extraLines
-      ].filter(Boolean).join(" · ");
-      return { room: "по подгруппе", address: null, instructor: null, rest, soft: true };
+      return { room: "по подгруппе", address: null, instructor: null, rest: "", soft: true };
     }
 
     let room = null;
     let address = null;
     let instructor = null;
-    let remaining = mainLine;
 
     const parts = mainLine.split(/\s*·\s*/);
     const beforeDot = parts[0] || "";
@@ -188,7 +199,7 @@
     } else {
       const namePattern = /^([А-ЯЁ][а-яё]+(?:\s+[А-ЯЁ]\.(?:\s*[А-ЯЁ]\.)?)?(?:\s*;\s*[А-ЯЁ][а-яё]+(?:\s+[А-ЯЁ]\.(?:\s*[А-ЯЁ]\.)?)?)*)\s*$/;
       const nameMatch = namePattern.exec(beforeDot.trim());
-      
+
       if (nameMatch) {
         instructor = nameMatch[1];
         address = afterDot.trim() || null;
@@ -198,15 +209,26 @@
       }
     }
 
+    const restParts = [];
+    for (const line of extraLines) {
+      if (/фактическое\s+время/i.test(line)) continue;
+      if (/аудитори[яи]\s+уточняется/i.test(line)) {
+        room = room || "уточняется";
+        continue;
+      }
+      if (/14[-‑]?я\s+линия|университетский\s+пр|матмех/i.test(line)) {
+        if (!address) address = line.replace(/\s*·\s*$/, "").trim();
+        continue;
+      }
+      restParts.push(line);
+    }
+
     if (address && !address.match(/[А-Яа-яЁё]/)) address = null;
     if (instructor && !instructor.match(/[А-Яа-яЁё]/)) instructor = null;
 
-    const restParts = extraLines.filter(
-      (line) => !/фактическое\s+время/i.test(line)
-    );
-    remaining = restParts.join(" · ") || "";
+    address = shortenAddress(address);
 
-    return { room, address, instructor, rest: remaining, soft: false };
+    return { room, address, instructor, rest: restParts.join(" · ") || "", soft: room === "уточняется" || room === "по подгруппе" };
   }
 
   function roomChip(room, soft) {
@@ -634,7 +656,7 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=9").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=10").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }
