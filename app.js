@@ -3,6 +3,7 @@
   const TZ = "Europe/Moscow";
   const DATA_URL = "./schedule.json";
   const CACHE_KEY = "schedule-cache-v2";
+  const CACHE_KEYS_LEGACY = ["schedule-cache-v1", "b84-schedule-cache-v1"];
   const SPBU_GROUP = 459575;
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -508,8 +509,33 @@
     });
   }
 
+  function readLocalCache() {
+    if (state.data) return state.data;
+    for (const key of [CACHE_KEY, ...CACHE_KEYS_LEGACY]) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        /* ignore broken cache */
+      }
+    }
+    return null;
+  }
+
+  function writeLocalCache(data) {
+    try {
+      const raw = JSON.stringify(data);
+      localStorage.setItem(CACHE_KEY, raw);
+      // keep legacy key so older builds still see data
+      localStorage.setItem("schedule-cache-v1", raw);
+    } catch (err) {
+      console.warn("localStorage full?", err);
+    }
+  }
+
   async function tryLiveSpbuEnrich(data) {
-    // Optional live refresh for current week if CORS allows
+    if (!navigator.onLine) return data;
     try {
       const now = moscowNow();
       const d = new Date(`${now.date}T12:00:00+03:00`);
@@ -522,7 +548,6 @@
       const url = `https://timetable.spbu.ru/api/v1/groups/${SPBU_GROUP}/events/${a}/${b}`;
       const res = await fetch(url, { mode: "cors" });
       if (!res.ok) return data;
-      // If CORS works, we could recompute — keep precomputed for stability
       return data;
     } catch {
       return data;
@@ -532,25 +557,40 @@
   async function loadSchedule({ force = false } = {}) {
     const btn = $("#btn-refresh");
     if (btn) btn.disabled = true;
+
+    // Seed UI from memory/localStorage before network (works fully offline)
+    const cached = readLocalCache();
+    if (cached && !state.data) {
+      applyData(cached);
+      updateStatus('<span class="ok">из кэша</span>');
+    }
+
     try {
-      const url = force ? `${DATA_URL}?t=${Date.now()}` : DATA_URL;
-      const res = await fetch(url, { cache: force ? "no-store" : "default" });
+      // Never bust with ?t= — breaks Cache API match offline
+      const res = await fetch(DATA_URL, {
+        cache: force ? "reload" : "default",
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let data = await res.json();
       data = await tryLiveSpbuEnrich(data);
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      writeLocalCache(data);
       applyData(data);
       if (force) toast("Расписание обновлено");
+      else updateStatus('<span class="ok">онлайн</span>');
     } catch (err) {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        applyData(JSON.parse(cached));
+      const fallback = readLocalCache();
+      if (fallback) {
+        // Keep current view if already showing the same cache
+        if (!state.data) applyData(fallback);
         updateStatus(
-          `<span class="err">офлайн · кэш (${escapeHtml(String(err.message))})</span>`
+          `<span class="err">офлайн · кэш</span>`
         );
-        toast("Нет сети — показан кэш");
+        toast(force ? "Нет сети — оставлен кэш" : "Офлайн · показан кэш");
       } else {
-        $("#status-line").innerHTML = `<span class="err">${escapeHtml(String(err.message))}</span>`;
+        updateStatus(
+          `<span class="err">${escapeHtml(String(err.message))}</span>`
+        );
+        toast("Нет данных офлайн — открой приложение онлайн один раз");
       }
     } finally {
       if (btn) btn.disabled = false;
@@ -566,14 +606,25 @@
     $("#btn-refresh")?.addEventListener("click", () => loadSchedule({ force: true }));
     $("#btn-now")?.addEventListener("click", () => jumpToNow(true));
     $("#fab-now")?.addEventListener("click", () => jumpToNow(true));
+
+    // Immediate offline paint, then try network
+    const cached = readLocalCache();
+    if (cached) applyData(cached);
     loadSchedule();
     registerSW();
+
+    window.addEventListener("online", () => loadSchedule({ force: true }));
+    window.addEventListener("offline", () => {
+      updateStatus('<span class="err">офлайн</span>');
+      toast("Офлайн — можно смотреть кэш");
+    });
+
     setInterval(() => {
       if (!state.data) return;
       const now = moscowNow();
       state.nearest = findNearest(state.data.lessons || [], now);
       renderNowHint(state.nearest);
-      updateStatus();
+      updateStatus(navigator.onLine ? "" : '<span class="err">офлайн</span>');
       updateNowNeedle();
     }, 15_000);
     window.addEventListener("resize", () => updateNowNeedle());
