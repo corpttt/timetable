@@ -2,7 +2,8 @@
 (function () {
   const TZ = "Europe/Moscow";
   const DATA_URL = "./schedule.json";
-  const CACHE_KEY = "schedule-cache-v1";
+  const CACHE_KEY = "schedule-cache-v2";
+  const SPBU_GROUP = 459575;
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -25,7 +26,6 @@
     return String(n).padStart(2, "0");
   }
 
-  /** "now" parts in Europe/Moscow */
   function moscowNow(date = new Date()) {
     const parts = new Intl.DateTimeFormat("en-GB", {
       timeZone: TZ,
@@ -96,7 +96,6 @@
       .replace(/"/g, "&quot;");
   }
 
-  /** Subject group key: strip type after em/en dash and trailing (...). */
   function subjectGroup(name) {
     let raw = String(name || "").trim();
     raw = raw.split(/\s*[—–]\s*/)[0].trim();
@@ -127,7 +126,6 @@
     return Math.abs(h);
   }
 
-  /** Stable unique colors: hash pick, then resolve collisions along the palette. */
   function buildColorMap(groupNames) {
     const used = new Set();
     const map = new Map();
@@ -147,7 +145,6 @@
     return map;
   }
 
-  /** Pull аудитория out of meta; rest stays as place/teacher text. */
   function parseMeta(meta) {
     const text = String(meta || "").trim();
     if (!text) return { room: null, rest: "", soft: false };
@@ -168,12 +165,13 @@
       return { room: "по подгруппе", rest, soft: true };
     }
 
-    // Require the period: "ауд. 2524" — never match the word "аудитория"
     const aud = /(?:^|[\s·,;])ауд\.\s*([^\s·,;]+)/i.exec(text);
     if (aud) {
       const room = aud[1].replace(/[.,;]+$/, "");
       const rest = text
-        .replace(/(?:^|[\s·,;])ауд\.\s*[^\s·,;]+/i, (m) => (m[0] === "а" || m[0] === "А" ? "" : m[0]))
+        .replace(/(?:^|[\s·,;])ауд\.\s*[^\s·,;]+/i, (m) =>
+          m[0] === "а" || m[0] === "А" ? "" : m[0]
+        )
         .replace(/^[\s·,;]+|[\s·,;]+$/g, "")
         .replace(/\s*[·]\s*/g, " · ")
         .replace(/\s{2,}/g, " ")
@@ -194,40 +192,22 @@
     return `<span class="chip chip-room" title="Аудитория">${escapeHtml(label)}</span>`;
   }
 
-  function renderHero(nearest, now, colorMap) {
-    const hero = $("#hero");
-    hero.className = "hero " + nearest.kind;
-    hero.style.removeProperty("--c");
-    if (nearest.kind === "done") {
-      hero.innerHTML = `
-        <div class="hero-label">Расписание</div>
-        <h2 class="hero-title">Ближайших пар нет</h2>
-        <p class="hero-meta">Сегодня ${escapeHtml(now.label)} · ${escapeHtml(TZ)}</p>`;
+  function renderNowHint(nearest) {
+    const el = $("#now-hint");
+    if (!el) return;
+    if (nearest.kind === "done" || !nearest.lesson) {
+      el.hidden = true;
+      el.textContent = "";
       return;
     }
+    el.hidden = false;
     const les = nearest.lesson;
-    const group = subjectGroup(les.subject);
-    const color = colorMap?.get(group) || SUBJECT_PALETTE[hashStr(group) % SUBJECT_PALETTE.length];
-    const { room, rest, soft } = parseMeta(les.meta);
-    const badge =
+    const tag =
       nearest.kind === "now"
         ? '<span class="badge badge-now">сейчас</span>'
         : '<span class="badge badge-next">далее</span>';
-    const label = nearest.kind === "now" ? "Идёт пара" : "Ближайшая пара";
-    hero.style.setProperty("--c", color);
-    hero.innerHTML = `
-      <div class="hero-label">${label} ${badge}</div>
-      <h2 class="hero-title">${escapeHtml(les.subject)}</h2>
-      <p class="hero-meta">${escapeHtml(les.dayTitle)}${rest ? " · " + escapeHtml(rest) : ""}</p>
-      <div class="hero-time">${escapeHtml(les.time)} · ${escapeHtml(les.weekTitle)}</div>
-      <div class="hero-chips">
-        <span class="chip"><span class="chip-dot" style="background:${color}"></span>${escapeHtml(group)}</span>
-        ${roomChip(room, soft)}
-      </div>
-      <div style="margin-top:0.75rem">
-        <button type="button" class="btn btn-primary" id="jump-nearest">Перейти к паре</button>
-      </div>`;
-    $("#jump-nearest")?.addEventListener("click", () => jumpToNearest(true));
+    el.innerHTML = `${tag} <strong>${escapeHtml(les.subject)}</strong>
+      <span class="muted"> · ${escapeHtml(les.time)} · ${escapeHtml(les.dayTitle || "")}</span>`;
   }
 
   function collectAllGroups(data) {
@@ -239,15 +219,69 @@
         }
       }
     }
+    for (const s of data.spbuOnly || []) set.add(subjectGroup(s.subject));
     return set;
   }
 
-  function renderSchedule(data, nearest, colorMap) {
+  function parsePairStart(time) {
+    const m = String(time || "").match(/(\d{1,2}):(\d{2})\s*[–\-]/);
+    return m ? `${pad(+m[1])}:${m[2]}` : "";
+  }
+
+  function parsePairEnd(time) {
+    const m = String(time || "").match(/[–\-]\s*(\d{1,2}):(\d{2})/);
+    return m ? `${pad(+m[1])}:${m[2]}` : "";
+  }
+
+  function renderLessonCard({
+    id,
+    time,
+    name,
+    meta,
+    color,
+    sync,
+    kind,
+    nearestKey,
+    nearestKind,
+    start,
+    end,
+  }) {
+    const { room, rest, soft } = parseMeta(meta);
+    let cls = "tl-item";
+    if (nearestKind === "now" && nearestKey === id) cls += " current";
+    if (nearestKind === "next" && nearestKey === id) cls += " next-pair";
+    if (sync === "local-only" || sync === "spbu-only") cls += " mismatch";
+    if (sync === "spbu-only") cls += " spbu-only";
+    const syncBadge =
+      sync === "local-only"
+        ? '<span class="badge badge-mismatch" title="Есть у нас, нет на Timetable SPbU">только у нас</span>'
+        : sync === "spbu-only"
+          ? '<span class="badge badge-mismatch" title="Есть на Timetable SPbU, нет у нас">только Timetable</span>'
+          : "";
+    return `<article class="${cls}" id="${id}" style="--c:${color}"
+      data-start="${escapeHtml(start || "")}" data-end="${escapeHtml(end || "")}" data-kind="${kind || "local"}">
+      <span class="tl-dot" aria-hidden="true"></span>
+      <div class="tl-time">${escapeHtml(time)}${syncBadge ? " " + syncBadge : ""}</div>
+      <div class="subj">${escapeHtml(name)}</div>
+      <div class="tl-chips">
+        ${roomChip(room, soft)}
+        ${rest ? `<span class="chip">${escapeHtml(rest)}</span>` : ""}
+      </div>
+    </article>`;
+  }
+
+  function spbuOnlyForDay(data, date) {
+    return (data.spbuOnly || []).filter((x) => x.date === date);
+  }
+
+  function renderSchedule(data, nearest) {
     const tabs = $("#week-tabs");
     const main = $("#weeks");
+    const colorMap = state.colorMap;
     const nearestWeek = nearest.lesson?.weekId ?? data.weeks[0]?.id ?? 0;
     const nearestDate = nearest.lesson?.date;
     const nearestKey = nearest.lesson ? lessonId(nearest.lesson) : null;
+    const today = moscowNow().date;
 
     tabs.innerHTML = data.weeks
       .map(
@@ -260,11 +294,11 @@
       .map((w) => {
         const days = (w.days || [])
           .map((d) => {
-            const nearestDay = d.date === nearestDate;
+            const nearestDay = d.date === nearestDate || d.date === today;
             const items = (d.pairs || [])
               .map((pair) => {
-                const m = pair.time.match(/(\d{1,2}):(\d{2})\s*[–\-]/);
-                const start = m ? `${pad(+m[1])}:${m[2]}` : "";
+                const start = parsePairStart(pair.time);
+                const end = parsePairEnd(pair.time);
                 return (pair.subjects || [])
                   .map((s) => {
                     const id = lessonId({
@@ -274,33 +308,62 @@
                     });
                     const group = subjectGroup(s.name);
                     const color = colorMap.get(group) || SUBJECT_PALETTE[0];
-                    const { room, rest, soft } = parseMeta(s.meta);
-                    let cls = "tl-item";
-                    if (nearest.kind === "now" && nearestKey === id) cls += " current";
-                    if (nearest.kind === "next" && nearestKey === id) cls += " next-pair";
-                    return `<article class="${cls}" id="${id}" style="--c:${color}">
-                      <span class="tl-dot" aria-hidden="true"></span>
-                      <div class="tl-time">${escapeHtml(pair.time)}</div>
-                      <div class="subj">${escapeHtml(s.name)}</div>
-                      <div class="tl-chips">
-                        ${roomChip(room, soft)}
-                        ${rest ? `<span class="chip">${escapeHtml(rest)}</span>` : ""}
-                      </div>
-                    </article>`;
+                    return renderLessonCard({
+                      id,
+                      time: pair.time,
+                      name: s.name,
+                      meta: s.meta,
+                      color,
+                      sync: s.sync || "ok",
+                      kind: "local",
+                      nearestKey,
+                      nearestKind: nearest.kind,
+                      start,
+                      end,
+                    });
                   })
                   .join("");
               })
               .join("");
 
+            const ghosts = spbuOnlyForDay(data, d.date)
+              .map((s) => {
+                const id = lessonId({
+                  date: s.date,
+                  start: s.start,
+                  subject: s.subject,
+                });
+                const group = subjectGroup(s.subject);
+                const color = colorMap.get(group) || "#f85149";
+                const time = `${s.start}–${s.end || "?"}`;
+                return renderLessonCard({
+                  id,
+                  time,
+                  name: s.subject,
+                  meta: s.meta,
+                  color,
+                  sync: "spbu-only",
+                  kind: "spbu",
+                  nearestKey,
+                  nearestKind: nearest.kind,
+                  start: s.start,
+                  end: s.end,
+                });
+              })
+              .join("");
+
             return `<section class="tl-day${nearestDay ? " nearest" : ""}" data-date="${d.date}" id="day-${d.date}">
               <div class="tl-day-label"><span>${escapeHtml(d.title)}</span><span class="muted">${escapeHtml(d.date)}</span></div>
-              ${items || '<article class="tl-item" style="--c:var(--border)"><span class="tl-dot"></span><div class="meta-rest">Пар нет</div></article>'}
+              ${items || ""}${ghosts || (items ? "" : '<article class="tl-item" style="--c:var(--border)"><span class="tl-dot"></span><div class="meta-rest">Пар нет</div></article>')}
             </section>`;
           })
           .join("");
 
         return `<div class="week-panel${w.id === nearestWeek ? " active" : ""}" data-week="${w.id}">
-          <div class="timeline">${days}</div>
+          <div class="timeline" data-week="${w.id}">
+            <div class="now-needle" hidden data-label=""><div class="now-beam"></div></div>
+            ${days}
+          </div>
         </div>`;
       })
       .join("");
@@ -312,24 +375,107 @@
         $$(".week-panel").forEach((p) =>
           p.classList.toggle("active", p.dataset.week === id)
         );
+        requestAnimationFrame(() => updateNowNeedle());
       });
     });
   }
 
-  function jumpToNearest(smooth) {
-    const n = state.nearest;
-    if (!n?.lesson) return;
-    const weekId = String(n.lesson.weekId);
-    $$(".week-tab").forEach((b) =>
-      b.classList.toggle("active", b.dataset.week === weekId)
-    );
-    $$(".week-panel").forEach((p) =>
-      p.classList.toggle("active", p.dataset.week === weekId)
-    );
-    const el = document.getElementById(lessonId(n.lesson));
-    if (el) {
-      el.scrollIntoView({ behavior: smooth ? "smooth" : "instant", block: "center" });
+  function activeTimeline() {
+    return $(".week-panel.active .timeline");
+  }
+
+  function updateNowNeedle() {
+    const now = moscowNow();
+    const timeline = activeTimeline();
+    if (!timeline) return;
+    const needle = timeline.querySelector(".now-needle");
+    if (!needle) return;
+
+    const day = timeline.querySelector(`.tl-day[data-date="${now.date}"]`);
+    if (!day) {
+      needle.hidden = true;
+      return;
     }
+
+    const items = [...day.querySelectorAll(".tl-item[data-start]")].filter(
+      (el) => el.dataset.start
+    );
+    const tlRect = timeline.getBoundingClientRect();
+    const dayRect = day.getBoundingClientRect();
+    let topPx = dayRect.top - tlRect.top + 28;
+    const nowMin = toMinutes(now.time) + now.seconds / 60;
+
+    if (items.length) {
+      const spans = items.map((el) => ({
+        el,
+        start: toMinutes(el.dataset.start),
+        end: toMinutes(el.dataset.end) || toMinutes(el.dataset.start) + 90,
+      }));
+      spans.sort((a, b) => a.start - b.start);
+
+      if (nowMin <= spans[0].start) {
+        const r = spans[0].el.getBoundingClientRect();
+        topPx = r.top - tlRect.top;
+      } else if (nowMin >= spans[spans.length - 1].end) {
+        const r = spans[spans.length - 1].el.getBoundingClientRect();
+        topPx = r.bottom - tlRect.top;
+      } else {
+        let placed = false;
+        for (const s of spans) {
+          if (nowMin >= s.start && nowMin <= s.end) {
+            const r = s.el.getBoundingClientRect();
+            const frac = (nowMin - s.start) / Math.max(s.end - s.start, 1);
+            topPx = r.top - tlRect.top + frac * r.height;
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          for (let i = 0; i < spans.length - 1; i++) {
+            if (nowMin > spans[i].end && nowMin < spans[i + 1].start) {
+              const a = spans[i].el.getBoundingClientRect();
+              const b = spans[i + 1].el.getBoundingClientRect();
+              const frac =
+                (nowMin - spans[i].end) /
+                Math.max(spans[i + 1].start - spans[i].end, 1);
+              topPx = a.bottom - tlRect.top + frac * (b.top - a.bottom);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    needle.hidden = false;
+    needle.style.top = `${Math.max(0, topPx)}px`;
+    needle.dataset.label = now.time;
+  }
+
+  function jumpToNow(smooth) {
+    const now = moscowNow();
+    // open week containing today
+    const week = (state.data?.weeks || []).find((w) =>
+      (w.days || []).some((d) => d.date === now.date)
+    );
+    if (week) {
+      const id = String(week.id);
+      $$(".week-tab").forEach((b) =>
+        b.classList.toggle("active", b.dataset.week === id)
+      );
+      $$(".week-panel").forEach((p) =>
+        p.classList.toggle("active", p.dataset.week === id)
+      );
+    }
+    requestAnimationFrame(() => {
+      updateNowNeedle();
+      const needle = $(".week-panel.active .now-needle");
+      const day = document.getElementById(`day-${now.date}`);
+      const target = needle && !needle.hidden ? needle : day;
+      target?.scrollIntoView({
+        behavior: smooth ? "smooth" : "instant",
+        block: "center",
+      });
+    });
   }
 
   function updateStatus(extra = "") {
@@ -337,9 +483,14 @@
     const updated = state.data?.updatedAt
       ? new Date(state.data.updatedAt).toLocaleString("ru-RU", { timeZone: TZ })
       : "—";
+    const sync = state.data?.syncStats;
+    const syncTxt = sync
+      ? `<span title="сверка с Timetable SPbU">SPbU: ✓${sync.matched} · ✗у нас ${sync.localOnly} · ✗там ${sync.spbuOnly}</span>`
+      : "";
     $("#status-line").innerHTML = `
       <span>Сейчас: ${escapeHtml(now.label)}</span>
       <span>Данные: ${escapeHtml(updated)}</span>
+      ${syncTxt}
       ${extra}`;
   }
 
@@ -348,16 +499,34 @@
     state.colorMap = buildColorMap(collectAllGroups(data));
     const now = moscowNow();
     state.nearest = findNearest(data.lessons || [], now);
-    renderHero(state.nearest, now, state.colorMap);
-    renderSchedule(data, state.nearest, state.colorMap);
-    updateStatus(
-      state.nearest.kind === "now"
-        ? '<span class="ok">открыта текущая пара</span>'
-        : state.nearest.kind === "next"
-          ? '<span class="ok">открыта ближайшая пара</span>'
-          : ""
-    );
-    requestAnimationFrame(() => jumpToNearest(false));
+    renderNowHint(state.nearest);
+    renderSchedule(data, state.nearest);
+    updateStatus();
+    requestAnimationFrame(() => {
+      jumpToNow(false);
+      updateNowNeedle();
+    });
+  }
+
+  async function tryLiveSpbuEnrich(data) {
+    // Optional live refresh for current week if CORS allows
+    try {
+      const now = moscowNow();
+      const d = new Date(`${now.date}T12:00:00+03:00`);
+      const mon = new Date(d);
+      mon.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+      const sun = new Date(mon);
+      sun.setDate(mon.getDate() + 6);
+      const a = mon.toISOString().slice(0, 10);
+      const b = sun.toISOString().slice(0, 10);
+      const url = `https://timetable.spbu.ru/api/v1/groups/${SPBU_GROUP}/events/${a}/${b}`;
+      const res = await fetch(url, { mode: "cors" });
+      if (!res.ok) return data;
+      // If CORS works, we could recompute — keep precomputed for stability
+      return data;
+    } catch {
+      return data;
+    }
   }
 
   async function loadSchedule({ force = false } = {}) {
@@ -367,7 +536,8 @@
       const url = force ? `${DATA_URL}?t=${Date.now()}` : DATA_URL;
       const res = await fetch(url, { cache: force ? "no-store" : "default" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      let data = await res.json();
+      data = await tryLiveSpbuEnrich(data);
       localStorage.setItem(CACHE_KEY, JSON.stringify(data));
       applyData(data);
       if (force) toast("Расписание обновлено");
@@ -375,12 +545,12 @@
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
         applyData(JSON.parse(cached));
-        updateStatus(`<span class="err">офлайн · кэш (${escapeHtml(String(err.message))})</span>`);
+        updateStatus(
+          `<span class="err">офлайн · кэш (${escapeHtml(String(err.message))})</span>`
+        );
         toast("Нет сети — показан кэш");
       } else {
-        $("#hero").innerHTML = `<div class="hero-label">Ошибка</div>
-          <h2 class="hero-title">Не удалось загрузить расписание</h2>
-          <p class="hero-meta">${escapeHtml(String(err.message))}</p>`;
+        $("#status-line").innerHTML = `<span class="err">${escapeHtml(String(err.message))}</span>`;
       }
     } finally {
       if (btn) btn.disabled = false;
@@ -394,14 +564,18 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     $("#btn-refresh")?.addEventListener("click", () => loadSchedule({ force: true }));
+    $("#btn-now")?.addEventListener("click", () => jumpToNow(true));
+    $("#fab-now")?.addEventListener("click", () => jumpToNow(true));
     loadSchedule();
     registerSW();
     setInterval(() => {
       if (!state.data) return;
       const now = moscowNow();
       state.nearest = findNearest(state.data.lessons || [], now);
-      renderHero(state.nearest, now, state.colorMap);
+      renderNowHint(state.nearest);
       updateStatus();
-    }, 60_000);
+      updateNowNeedle();
+    }, 15_000);
+    window.addEventListener("resize", () => updateNowNeedle());
   });
 })();

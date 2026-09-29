@@ -106,44 +106,6 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   padding: 1rem 1rem 5rem;
 }
 
-.hero {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem 1.1rem;
-  margin-bottom: 1rem;
-  border-left: 3px solid var(--border);
-}
-.hero.now { border-left-color: var(--success); }
-.hero.next { border-left-color: var(--warn); }
-.hero-label {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 0.35rem;
-}
-.hero.now .hero-label { color: var(--success); }
-.hero.next .hero-label { color: var(--warn); }
-.hero-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 0.35rem;
-}
-.hero-meta { color: var(--muted); margin: 0; }
-.hero-time {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--fg);
-  margin-top: 0.55rem;
-}
-.hero-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.65rem;
-}
 .badge {
   display: inline-block;
   border-radius: 999px;
@@ -154,6 +116,12 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
 }
 .badge-now { background: var(--success-bg); color: var(--success); border-color: rgba(63,185,80,0.4); }
 .badge-next { background: var(--warn-bg); color: var(--warn); border-color: rgba(210,153,34,0.4); }
+.badge-mismatch {
+  background: rgba(248, 81, 73, 0.12);
+  color: var(--danger);
+  border-color: rgba(248, 81, 73, 0.4);
+  border-style: dashed;
+}
 
 .chip {
   display: inline-flex;
@@ -189,10 +157,16 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   align-items: center;
   color: var(--muted);
   font-size: 12px;
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.45rem;
 }
 .status-line .ok { color: var(--success); }
 .status-line .err { color: var(--danger); }
+.now-hint {
+  margin: 0 0 0.85rem;
+  color: var(--fg);
+  font-size: 13px;
+}
+.now-hint .muted { color: var(--muted); }
 
 .week-tabs {
   display: flex;
@@ -323,6 +297,85 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   margin-top: 0.45rem;
 }
 
+.tl-item.mismatch {
+  border-style: dashed;
+  border-color: rgba(248, 81, 73, 0.65);
+  background: rgba(248, 81, 73, 0.06);
+}
+.tl-item.mismatch.spbu-only {
+  opacity: 0.92;
+  border-left-style: dashed;
+}
+.tl-item.mismatch .tl-dot {
+  background: var(--danger);
+  box-shadow: 0 0 0 2px var(--danger);
+}
+
+.now-needle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  z-index: 6;
+  pointer-events: none;
+  transition: top 0.35s linear;
+}
+.now-needle::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--rail) / 2);
+  top: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #f85149;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 3px rgba(248, 81, 73, 0.28);
+  transform: translate(-50%, -50%);
+}
+.now-needle::after {
+  content: attr(data-label);
+  position: absolute;
+  left: calc(var(--rail) + 0.55rem);
+  top: 0;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: #f85149;
+  background: rgba(1, 4, 9, 0.85);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.now-needle .now-beam {
+  position: absolute;
+  left: calc(var(--rail) / 2);
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #f85149 0%, rgba(248, 81, 73, 0.15) 70%, transparent);
+  transform: translateY(-50%);
+}
+
+.fab-now {
+  position: fixed;
+  right: 1rem;
+  bottom: 1.25rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(248, 81, 73, 0.5);
+  background: #f85149;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 45;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.fab-now:hover { filter: brightness(1.08); }
+
 .toast {
   position: fixed;
   left: 50%;
@@ -343,6 +396,6 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
 .toast.show { opacity: 1; }
 
 @media (max-width: 560px) {
-  .hero-title { font-size: 1.1rem; }
   .timeline { padding-left: calc(var(--rail) + 0.65rem); }
+  .fab-now { bottom: 5.5rem; }
 }

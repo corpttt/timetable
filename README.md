@@ -1,11 +1,22 @@
 # Timetable
 
-Personal class schedule as a small PWA (dark UI, nearest lesson, offline cache).
+Personal class schedule PWA.
 
 ## Phone
 
-Open the Pages URL in Chrome → Install / Add to Home screen.
+https://corpttt.github.io/timetable/ — Chrome → Install / Add to Home screen.
 
-## Data
+## Features
 
-Update `schedule.json`, push, then tap refresh in the app.
+- Colored subject timeline
+- Moving **now** needle on the rail + «Сейчас» button
+- Dashed border when a class exists only in local ODS or only on Timetable SPbU
+
+## Update data
+
+```bash
+python scripts/export_schedule_json.py
+python scripts/sync_timetable_spbu.py
+```
+
+Then push and tap refresh in the app.

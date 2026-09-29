@@ -22,6 +22,7 @@
         <span>расписание</span>
       </a>
       <div class="header-actions">
+        <button type="button" class="btn" id="btn-now" title="К линии текущего времени">● Сейчас</button>
         <button type="button" class="btn" id="btn-refresh" title="Обновить данные">↻ Обновить</button>
       </div>
     </div>
@@ -29,16 +30,12 @@
 
   <div class="wrap">
     <p class="status-line" id="status-line">Загрузка…</p>
-    <section class="hero" id="hero">
-      <div class="hero-label">Загрузка</div>
-      <h2 class="hero-title">Расписание</h2>
-      <p class="hero-meta">Загружаем данные…</p>
-    </section>
-
+    <p class="now-hint" id="now-hint" hidden></p>
     <nav class="week-tabs" id="week-tabs" aria-label="Недели"></nav>
     <div id="weeks"></div>
   </div>
 
+  <button type="button" class="fab-now" id="fab-now" title="К линии сейчас" aria-label="К линии сейчас">●</button>
   <div class="toast" id="toast" role="status"></div>
   <script src="./app.js"></script>
 </body>

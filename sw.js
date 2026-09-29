@@ -1,4 +1,4 @@
-const CACHE = "schedule-shell-v1";
+const CACHE = "schedule-shell-v2";
 const SHELL = [
   "./",
   "./index.html",
