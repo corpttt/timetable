@@ -322,7 +322,6 @@
       <div class="tl-chips">
         ${roomChip(room, soft)}
         ${addressChip(address)}
-        ${instructorChip(instructor)}
         ${rest ? `<span class="chip">${escapeHtml(rest)}</span>` : ""}
       </div>
     </article>`;
@@ -656,7 +655,7 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=11").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=12").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }
