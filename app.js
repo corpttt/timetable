@@ -2,6 +2,7 @@
 (function () {
   const TZ = "Europe/Moscow";
   const DATA_URL = "./schedule.json";
+  const OVERRIDES_URL = "./overrides.json";
   const CACHE_KEY = "schedule-cache-v3";
   const CACHE_KEYS_LEGACY = ["schedule-cache-v2", "schedule-cache-v1", "b84-schedule-cache-v1"];
   const SPBU_GROUP = 459575;
@@ -13,6 +14,7 @@
     data: null,
     nearest: null,
     colorMap: null,
+    overrides: { items: [] },
   };
 
   function toast(msg) {
@@ -292,6 +294,34 @@
     return m ? `${pad(+m[1])}:${m[2]}` : "";
   }
 
+  function overrideForSubject(date, name, meta) {
+    const items = (state.overrides && state.overrides.items) || [];
+    const n = String(name || "").toLowerCase().replace(/ё/g, "е");
+    const blob = `${meta || ""}\n${name || ""}`;
+    let best = null;
+    for (const it of items) {
+      if (it.active === false) continue;
+      if (it.dates && it.dates.length && date && !it.dates.includes(date)) continue;
+      const keys = it.subjects || [];
+      const subjOk = !keys.length || keys.some((k) => n.includes(String(k).toLowerCase()));
+      if (!subjOk) continue;
+      if (it.place_14) {
+        const placeOk =
+          /14|линия|васьк|в\.?\s*о/i.test(blob) ||
+          /алгоритм|информатик/i.test(n);
+        if (!placeOk) continue;
+      }
+      if (Array.isArray(it.matches) && it.matches.length) {
+        const hit = it.matches.some(
+          (m) => m.date === date && String(m.name || "").toLowerCase() === n
+        );
+        if (!hit) continue;
+      }
+      best = it;
+    }
+    return best;
+  }
+
   function renderLessonCard({
     id,
     time,
@@ -304,25 +334,36 @@
     nearestKind,
     start,
     end,
+    date,
   }) {
     const { room, address, instructor, rest, soft } = parseMeta(meta);
+    const ov = overrideForSubject(date, name, meta);
     let cls = "tl-item";
     if (nearestKind === "now" && nearestKey === id) cls += " current";
     if (nearestKind === "next" && nearestKey === id) cls += " next-pair";
     if (sync === "spbu-only") cls += " mismatch spbu-only";
+    if (ov?.action === "cancel") cls += " cancelled";
+    if (ov?.action === "confirm") cls += " tg-confirm";
     const syncBadge =
       sync === "spbu-only"
         ? '<span class="badge badge-mismatch" title="Есть в Timetable Б84, нет в нашем файле">Timetable</span>'
         : "";
+    const tgBadge =
+      ov?.action === "cancel"
+        ? `<span class="badge badge-cancel" title="${escapeHtml(ov.note || "отмена из Telegram")}">отмена</span>`
+        : ov?.action === "confirm"
+          ? `<span class="badge badge-confirm" title="${escapeHtml(ov.note || "подтверждено в Telegram")}">TG ✓</span>`
+          : "";
     return `<article class="${cls}" id="${id}" style="--c:${color}"
       data-start="${escapeHtml(start || "")}" data-end="${escapeHtml(end || "")}" data-kind="${kind || "local"}">
       <span class="tl-dot" aria-hidden="true"></span>
-      <div class="tl-time">${escapeHtml(time)}${syncBadge ? " " + syncBadge : ""}</div>
+      <div class="tl-time">${escapeHtml(time)}${syncBadge ? " " + syncBadge : ""}${tgBadge ? " " + tgBadge : ""}</div>
       <div class="subj">${escapeHtml(name)}</div>
       <div class="tl-chips">
         ${roomChip(room, soft)}
         ${addressChip(address)}
         ${rest ? `<span class="chip">${escapeHtml(rest)}</span>` : ""}
+        ${ov?.note ? `<span class="chip">${escapeHtml(ov.note)}</span>` : ""}
       </div>
     </article>`;
   }
@@ -377,6 +418,7 @@
                       nearestKind: nearest.kind,
                       start,
                       end,
+                      date: d.date,
                     });
                   })
                   .join("");
@@ -405,6 +447,7 @@
                   nearestKind: nearest.kind,
                   start: s.start,
                   end: s.end,
+                  date: s.date,
                 });
               })
               .join("");
@@ -623,11 +666,19 @@
 
     try {
       // Never bust with ?t= — breaks Cache API match offline
-      const res = await fetch(DATA_URL, {
-        cache: force ? "reload" : "default",
-      });
+      const [res, ovRes] = await Promise.all([
+        fetch(DATA_URL, { cache: force ? "reload" : "default" }),
+        fetch(OVERRIDES_URL, { cache: force ? "reload" : "default" }).catch(() => null),
+      ]);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let data = await res.json();
+      if (ovRes && ovRes.ok) {
+        try {
+          state.overrides = await ovRes.json();
+        } catch {
+          state.overrides = { items: [] };
+        }
+      }
       data = await tryLiveSpbuEnrich(data);
       writeLocalCache(data);
       applyData(data);
@@ -655,7 +706,7 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=12").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=13").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }

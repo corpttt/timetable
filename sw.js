@@ -1,13 +1,14 @@
-const CACHE = "schedule-shell-v12";
+const CACHE = "schedule-shell-v13";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css",
-  "./styles.css?v=12",
+  "./styles.css?v=13",
   "./app.js",
-  "./app.js?v=12",
+  "./app.js?v=13",
   "./manifest.json",
   "./schedule.json",
+  "./overrides.json",
   "./favicon.ico",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -33,19 +34,26 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-function isScheduleRequest(url) {
-  return url.pathname.endsWith("/schedule.json") || url.pathname.endsWith("schedule.json");
+function isLiveJson(url) {
+  const p = url.pathname;
+  return (
+    p.endsWith("/schedule.json") ||
+    p.endsWith("schedule.json") ||
+    p.endsWith("/overrides.json") ||
+    p.endsWith("overrides.json")
+  );
 }
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET") return;
 
-  if (isScheduleRequest(url)) {
+  if (isLiveJson(url)) {
+    const name = url.pathname.endsWith("overrides.json") ? "overrides.json" : "schedule.json";
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE);
-        const cleanReq = new Request(new URL("schedule.json", self.registration.scope).href, {
+        const cleanReq = new Request(new URL(name, self.registration.scope).href, {
           credentials: "same-origin",
         });
         try {
@@ -59,9 +67,15 @@ self.addEventListener("fetch", (event) => {
         }
         const hit =
           (await cache.match(cleanReq)) ||
-          (await cache.match("./schedule.json")) ||
+          (await cache.match("./" + name)) ||
           (await cache.match(event.request));
         if (hit) return hit;
+        if (name === "overrides.json") {
+          return new Response(JSON.stringify({ items: [] }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
         return new Response(JSON.stringify({ error: "offline", weeks: [], lessons: [] }), {
           status: 503,
           headers: { "Content-Type": "application/json" },
