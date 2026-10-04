@@ -102,11 +102,17 @@
       <div class="nb-chrome-actions">
         <button type="button" class="nb-resume" id="nb-btn-resume" hidden>Продолжить</button>
         <button type="button" id="nb-btn-theme" title="Тема">◑</button>
+        <button type="button" id="nb-btn-reload" title="Скачать эту тетрадь заново с сайта">↻</button>
       </div>`;
     document.body.prepend(bar);
 
     document.getElementById("nb-btn-theme")?.addEventListener("click", () => {
       applyTheme(themeNow() === "light" ? "dark" : "light");
+    });
+    document.getElementById("nb-btn-reload")?.addEventListener("click", () => {
+      const u = new URL(location.href);
+      u.searchParams.set("v", String(Date.now()));
+      location.replace(u.toString());
     });
 
     const resume = document.getElementById("nb-btn-resume");

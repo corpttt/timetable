@@ -58,8 +58,8 @@ pre.cheat { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospac
 </style>
 
 <meta name="theme-color" content="#0d1117">
-<link rel="stylesheet" href="../notebooks-chrome.css?v=17">
-<script src="../notebooks-chrome.js?v=17" defer></script>
+<link rel="stylesheet" href="../notebooks-chrome.css?v=18">
+<script src="../notebooks-chrome.js?v=18" defer></script>
 </head>
 <body>
 <header>
@@ -154,14 +154,14 @@ pre.cheat { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospac
 
 <h2>Асимптотика: O, Θ, Ω, o, ω</h2>
   <p>Нужен язык: «f растёт не быстрее g», «тот же порядок», «строго медленнее». Это и есть большая O и компания.</p>
-  <table>
+  <div class="nb-table-scroll"><table>
     <tr><th>Знак</th><th>Интуиция</th><th>Картинка</th></tr>
     <tr><td>f = O(g)</td><td>f ≲ g — верхняя оценка</td><td>f не выше C·g с какого-то N</td></tr>
     <tr><td>f = Ω(g)</td><td>f ≳ g — нижняя оценка</td><td>f не ниже C·g</td></tr>
     <tr><td>f = Θ(g)</td><td>f ≍ g — один порядок</td><td>зажат между C₁g и C₂g</td></tr>
     <tr><td>f = o(g)</td><td>f ≪ g — строго медленнее</td><td>f/g → 0</td></tr>
     <tr><td>f = ω(g)</td><td>f ≫ g</td><td>f/g → ∞</td></tr>
-  </table>
+  </table></div>
   <div class="formula-box" role="note">
     <div class="formula-box-label">Порядок роста</div>
     <div class="formula-box-body">f = O(g) — верхняя оценка  f = Θ(g) — тот же порядок</div>
@@ -351,11 +351,11 @@ pre.cheat { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospac
   <div class="def">T(n) = 3 T(n/2) + O(n).</div>
   <p>Мастер-теорема: a=3, b=2, c=1 → q = 3/2 = 1.5 &gt; 1 → T = Θ(n^{log₂ 3}).</p>
   <p>log₂ 3 ≈ 1.585, поэтому ≈ Θ(n¹·⁵⁸⁵). Это уже <em>строго медленнее квадрата</em>: при больших n Карацуба обгоняет «столбик».</p>
-  <table>
+  <div class="nb-table-scroll"><table>
     <tr><th>Метод</th><th>Тяжёлых умножений половин</th><th>Порядок</th></tr>
     <tr><td>столбик / 4 произведения</td><td>4</td><td>Θ(n²)</td></tr>
     <tr><td>Карацуба</td><td>3</td><td>Θ(n^{log₂ 3}) ≈ Θ(n¹·⁵⁸⁵)</td></tr>
-  </table>
+  </table></div>
   <div class="ex"><strong>Когда не гонять Карацубу.</strong> На маленьких n константы, сложения и накладные расходы рекурсии съедают выигрыш (задача 16 с практики). В коде обычно: «если длина &lt; порога — умножай в лоб». Асимптотика — про <em>большие</em> входы.</div>
   <p class="src">Слово «Фурье» на паре — намёк на ещё более быстрое умножение через FFT; это следующий уровень после Карацубы, пока достаточно знать: квадрат — не предел.</p>
 </section>
@@ -417,12 +417,12 @@ pre.cheat { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospac
 <section class="card" id="master-cases">
 
 <h2>Три случая мастер-теоремы</h2>
-  <table>
+  <div class="nb-table-scroll"><table>
     <tr><th>Условие</th><th>Ответ</th><th>Интуиция</th></tr>
     <tr><td>q &lt; 1</td><td>T = Θ(nᶜ)</td><td>работа убывает вниз → доминирует «верх» (корень)</td></tr>
     <tr><td>q = 1</td><td>T = Θ(nᶜ log n)</td><td>на каждом уровне ≈ nᶜ, уровней log → умножить на log</td></tr>
     <tr><td>q &gt; 1</td><td>T = Θ(n^{log_b a})</td><td>работа растёт вниз → доминируют листья; a^{log_b n} = n^{log_b a}</td></tr>
-  </table>
+  </table></div>
 
 <h3>Почему при q &gt; 1 появляется log_b a</h3>
   <p>Число листьев ≈ aᴸ, L = log_b n → a^{log_b n}. Известное тождество: a^{log_b n} = n^{log_b a}. Каждый лист — константа работы → порядок n^{log_b a}.</p>
@@ -518,7 +518,7 @@ pre.cheat { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospac
   <p><strong>7.</strong> пары 1≤i≤j≤n: n(n+1)/2 = Θ(n²).</p>
 
 <h3>Задачи 8–13. Рекурсии — по шагам</h3>
-  <table>
+  <div class="nb-table-scroll"><table>
     <tr><th>T(n)</th><th>a,b,c</th><th>q</th><th>Случай</th><th>Ответ</th></tr>
     <tr><td>T(n/2)+1</td><td>1,2,0</td><td>1</td><td>q=1</td><td>Θ(log n)</td></tr>
     <tr><td>2T(n/2)+1</td><td>2,2,0</td><td>2</td><td>q&gt;1</td><td>Θ(n^{log₂ 2})=Θ(n)</td></tr>
@@ -526,7 +526,7 @@ pre.cheat { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospac
     <tr><td>4T(n/2)+n</td><td>4,2,1</td><td>2</td><td>q&gt;1</td><td>Θ(n²)</td></tr>
     <tr><td>3T(n/2)+O(n)</td><td>3,2,1</td><td>1.5</td><td>q&gt;1</td><td>Θ(n^{log₂ 3})</td></tr>
     <tr><td>2T(n/2)+n²</td><td>2,2,2</td><td>½</td><td>q&lt;1</td><td>Θ(n²)</td></tr>
-  </table>
+  </table></div>
   <p class="own"><em>Своими словами.</em> Выпиши a,b,c → посчитай q → открой нужную строку таблицы случаев. Не угадывай.</p>
 
 <h3>Задачи 14–16. Умножение и Карацуба</h3>
@@ -875,12 +875,12 @@ pre.cheat { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospac
 <p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест массив-списки-вектор</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
 
 <h2>Стек, очередь, дек, кольцо</h2>
-  <table>
+  <div class="nb-table-scroll"><table>
     <tr><th>Абстракция</th><th>Смысл</th></tr>
     <tr><td>стек</td><td>LIFO — последний пришёл, первый ушёл</td></tr>
     <tr><td>очередь</td><td>FIFO — первый пришёл, первый ушёл</td></tr>
     <tr><td>дек</td><td>операции на обоих концах</td></tr>
-  </table>
+  </table></div>
   <div class="ex"><strong>Задача 3.</strong> push 3,8,1; первый pop → <strong>3</strong>.</div>
 
   <div class="fig">
