@@ -30,6 +30,12 @@
       "title": "Дискретная математика · индукция",
       "subject": "Дискретная математика",
       "href": "./notebooks/discrete.html"
+    },
+    {
+      "id": "english",
+      "title": "Английский · Unit 1 + Module 2",
+      "subject": "Английский (с ответами)",
+      "href": "./notebooks/english.html"
     }
   ]
 }
