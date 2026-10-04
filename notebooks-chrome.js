@@ -67,6 +67,16 @@
     document.documentElement.setAttribute("data-nb-side", side);
   }
 
+  function wrapWideTables() {
+    document.querySelectorAll("table").forEach((table) => {
+      if (table.closest(".nb-table-scroll")) return;
+      const wrap = document.createElement("div");
+      wrap.className = "nb-table-scroll";
+      table.parentNode.insertBefore(wrap, table);
+      wrap.appendChild(table);
+    });
+  }
+
   function wireGeometrySides() {
     const nav = document.getElementById("sides");
     if (!nav) return;
@@ -151,6 +161,7 @@
   function boot() {
     if (!document.body) return;
     buildChrome(saved);
+    wrapWideTables();
     wireGeometrySides();
     const side = (saved && saved.side) || sideSaved;
     if (side) restoreSide(side);

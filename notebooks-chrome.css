@@ -1,4 +1,37 @@
 /* Общая оболочка HTML-тетрадей в PWA */
+html, body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+body > header,
+body > main,
+.card,
+.prose {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* широкие таблицы скроллятся сами, страница не уезжает */
+.nb-table-scroll {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0.75rem 0;
+  overscroll-behavior-x: contain;
+}
+.nb-table-scroll > table {
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+}
+.fig,
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .nb-chrome {
   position: sticky;
   top: 0;
