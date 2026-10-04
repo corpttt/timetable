@@ -443,9 +443,9 @@ html[data-theme="light"] .badge-local-only {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 1px solid rgba(248, 81, 73, 0.5);
-  background: #f85149;
-  color: #fff;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--danger);
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -453,6 +453,27 @@ html[data-theme="light"] .badge-local-only {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 .fab-now:hover { filter: brightness(1.08); }
+
+/* красная кнопка: расписание ↔ тетрадь */
+.fab-flip {
+  position: fixed;
+  left: 1rem;
+  bottom: 1.25rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: #e11d48;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 46;
+  box-shadow: 0 4px 18px rgba(225, 29, 72, 0.45);
+}
+.fab-flip:hover { filter: brightness(1.1); }
+.fab-flip:active { transform: scale(0.96); }
 
 .toast {
   position: fixed;
@@ -514,4 +535,5 @@ html[data-theme="light"] .badge-local-only {
 @media (max-width: 560px) {
   .timeline { padding-left: calc(var(--rail) + 0.65rem); }
   .fab-now { bottom: 5.5rem; }
+  .fab-flip { bottom: 5.5rem; }
 }
