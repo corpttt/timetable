@@ -180,9 +180,46 @@
     });
   }
 
+  // fallback ⇄ если flip.js не загрузился (забыли в publish)
+  function mountFlipFallback() {
+    if (document.getElementById("fab-flip")) return;
+    const KEY = "ucheba-flip-nb";
+    function appBase() {
+      const p = location.pathname;
+      if (p.includes("/notebooks/")) {
+        return p.replace(/\/notebooks\/[^/]*$/, "/");
+      }
+      return p.replace(/[^/]*$/, "");
+    }
+    function hereRel() {
+      const base = appBase();
+      let rel = location.pathname.slice(base.length);
+      if (!rel) rel = "index.html";
+      return rel + location.search + location.hash;
+    }
+    try {
+      localStorage.setItem(KEY, hereRel());
+    } catch (_) {}
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "fab-flip";
+    btn.className = "fab-flip";
+    btn.textContent = "⇄";
+    btn.title = "В расписание";
+    btn.setAttribute("aria-label", "Перейти в расписание");
+    btn.addEventListener("click", () => {
+      try {
+        localStorage.setItem(KEY, hereRel());
+      } catch (_) {}
+      location.href = appBase() + "index.html";
+    });
+    document.body.appendChild(btn);
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {
     boot();
   }
+  setTimeout(mountFlipFallback, 400);
 })();
