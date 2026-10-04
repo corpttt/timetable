@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Дискретная математика · практика (индукция)</title>
+<style>
+:root {
+  --bg: #f6f4ef; --card: #fff; --ink: #1c1b19; --muted: #6b665c;
+  --line: #e2ddd2; --acc: #1f5c4d; --acc2: #8a4b1f; --soft: #e8f1ee;
+  --warn: #fff4e5; --code: #f0ebe3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font: 16px/1.55 "Segoe UI", "Cambria Math", "Segoe UI Symbol", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+header { max-width: 54rem; margin: 0 auto; padding: 1.2rem 1.2rem 0.6rem; }
+h1 { font-size: 1.45rem; margin: 0 0 0.25rem; }
+.note { color: var(--muted); font-size: 0.92rem; margin: 0 0 0.7rem; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.5rem; }
+nav.toc a { text-decoration: none; color: var(--acc); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 0.28rem 0.7rem; font-size: 0.86rem; }
+main { max-width: 54rem; margin: 0 auto 3rem; padding: 0 1.2rem; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.15rem 1.25rem; margin: 0 0 0.95rem; }
+h2 { font-size: 1.18rem; margin: 0 0 0.55rem; color: var(--acc); }
+h3 { font-size: 1.02rem; margin: 1.05rem 0 0.4rem; }
+p { margin: 0.45rem 0; }
+ul, ol { margin: 0.35rem 0 0.55rem; padding-left: 1.25rem; }
+li { margin: 0.28rem 0; }
+.def { border-left: 3px solid var(--acc); background: var(--soft); padding: 0.55rem 0.8rem; border-radius: 0 8px 8px 0; margin: 0.55rem 0; }
+.own { color: #333; }
+.ex { border-left: 3px solid var(--acc2); background: var(--warn); padding: 0.55rem 0.8rem; border-radius: 0 8px 8px 0; margin: 0.55rem 0; }
+.cheat { background: var(--code); border: 1px dashed var(--line); border-radius: 10px; padding: 0.7rem 0.9rem; }
+.fig { margin: 0.75rem 0; padding: 0.55rem; background: #faf9f6; border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+.fig svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.caption { color: var(--muted); font-size: 0.88rem; text-align: center; margin-top: 0.35rem; }
+code, .mono { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
+.video a { color: var(--acc); font-weight: 600; }
+.src { color: var(--muted); font-size: 0.88rem; }
+.tag { display: inline-block; font-size: 0.75rem; padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--soft); color: var(--acc); margin-right: 0.25rem; }
+.ok { color: var(--acc); font-weight: 700; }
+.formula-box {
+  margin: 0.9rem 0; padding: 0.85rem 1rem 0.95rem; border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--acc) 35%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 8%, var(--card)), var(--card));
+}
+.formula-box-label {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--acc); margin-bottom: 0.35rem;
+}
+.formula-box-body {
+  font-family: "Cambria Math", "Segoe UI Symbol", "Segoe UI", serif;
+  font-size: 1.12rem; line-height: 1.45;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Дискретная математика · практика (индукция)</h1>
+  <p class="note">База · шаг · сильная индукция · делимость · неравенства · задачи с практики (Документ 13)</p>
+  <nav class="toc">
+    <a href="#intro">Введение</a>
+    <a href="#principle">Принцип</a>
+    <a href="#geom">Геом. прогрессия</a>
+    <a href="#squares">Сумма квадратов</a>
+    <a href="#deriv">Производная xⁿ</a>
+    <a href="#div">Делимость 4ⁿ−1</a>
+    <a href="#tromino">Замощение</a>
+    <a href="#strong">Сильная индукция</a>
+    <a href="#task1">Задача 1 · сумма</a>
+    <a href="#task2">Задача 2 · гармоника</a>
+    <a href="#ineq">Задача 3 · 2ⁿ</a>
+    <a href="#task4">Задача 4 · 2^{3ⁿ}+1</a>
+    <a href="#cheat">Шпаргалка</a>
+    <a href="#video">Видео</a>
+  </nav>
+</header>
+<main>
+
+<section class="card" id="intro">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест практика-индукция</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Введение</h2>
+  <p>Тетрадь по практике из <span class="mono">практика/Документ 13.pdf</span> (рукописный конспект): метод математической индукции с полными выкладками — как на паре, а не «формула и галочка».</p>
+  <p class="src">Структура: принцип → разобранные примеры с доски → четыре задачи с практики с пошаговыми доказательствами.</p>
+</section>
+
+<section class="card" id="principle">
+
+<h2>Принцип математической индукции</h2>
+  <div class="formula-box" role="note">
+    <div class="formula-box-label">Математическая индукция</div>
+    <div class="formula-box-body">база P(n₀) + шаг P(k) ⇒ P(k+1) ⟹ P(n) для всех n ≥ n₀</div>
+  </div>
+  <div class="def"><strong>Определение.</strong> Пусть P(n) — утверждение о натуральном n (иногда с 0). Если<br>
+  1) P(n₀) истинно (<em>база</em>),<br>
+  2) ∀ k ≥ n₀ из P(k) следует P(k+1) (<em>шаг / индукционный переход</em>),<br>
+  то P(n) истинно для всех n ≥ n₀.</div>
+  <p class="own"><em>Своими словами.</em> Встал на первую ступеньку и умеешь с любой ступеньки перейти на следующую → дойдёшь до любой высоты.</p>
+  <div class="fig">
+<svg viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+  <rect x="40" y="120" width="70" height="30" fill="#1f5c4d"/><text x="75" y="140" text-anchor="middle" fill="#fff" font-size="12">P(0)</text>
+  <rect x="120" y="95" width="70" height="55" fill="#3a7a68"/><text x="155" y="128" text-anchor="middle" fill="#fff" font-size="12">P(1)</text>
+  <rect x="200" y="70" width="70" height="80" fill="#5a9a88"/><text x="235" y="115" text-anchor="middle" fill="#fff" font-size="12">…</text>
+  <rect x="280" y="50" width="70" height="100" fill="#8a4b1f"/><text x="315" y="105" text-anchor="middle" fill="#fff" font-size="12">P(k)</text>
+  <rect x="360" y="30" width="80" height="120" fill="#a8642f"/><text x="400" y="95" text-anchor="middle" fill="#fff" font-size="12">P(k+1)</text>
+  <path d="M350 90 L360 90" stroke="#1c1b19" stroke-width="2" marker-end="url(#a)"/>
+  <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1c1b19"/></marker></defs>
+  <text x="330" y="75" font-size="12">шаг</text>
+  <text x="75" y="165" text-anchor="middle" font-size="11" fill="#6b665c">база</text>
+</svg>
+  <div class="caption">Лестница индукции: база + умение шагать.</div>
+  </div>
+</section>
+
+<section class="card" id="geom">
+
+<h2>Пример: сумма геометрической прогрессии</h2>
+  <div class="def">Доказать: 1 + q + q² + … + qⁿ = (1 − qⁿ⁺¹)/(1 − q) при q ≠ 1.</div>
+  <p><strong>База n = 0.</strong> Слева: 1. Справа: (1 − q)/(1 − q) = 1. <span class="ok">✓</span></p>
+  <p><strong>Предположение P(k):</strong> 1 + … + qᵏ = (1 − qᵏ⁺¹)/(1 − q).</p>
+  <p><strong>Шаг P(k+1).</strong> Левая часть =<br>
+  (1 + … + qᵏ) + qᵏ⁺¹ = (1 − qᵏ⁺¹)/(1 − q) + qᵏ⁺¹<br>
+  = (1 − qᵏ⁺¹ + qᵏ⁺¹(1 − q))/(1 − q) = (1 − qᵏ⁺¹ + qᵏ⁺¹ − qᵏ⁺²)/(1 − q)<br>
+  = (1 − qᵏ⁺²)/(1 − q) — это правая часть при n = k+1. <span class="ok">ЧТД</span></p>
+  <div class="ex"><strong>Числа.</strong> q = 2, n = 3: 1+2+4+8 = 15; (1−16)/(1−2) = 15.</div>
+</section>
+
+<section class="card" id="squares">
+
+<h2>Пример: сумма квадратов</h2>
+  <div class="def">1² + 2² + … + n² = n(n+1)(2n+1)/6.</div>
+  <p><strong>База n = 1:</strong> 1 = 1·2·3/6. <span class="ok">✓</span></p>
+  <p><strong>Шаг.</strong> Сумма до k+1 =<br>
+  k(k+1)(2k+1)/6 + (k+1)² = (k+1) [ k(2k+1) + 6(k+1) ] / 6<br>
+  = (k+1)(2k² + 7k + 6)/6 = (k+1)(k+2)(2k+3)/6<br>
+  — формула при n = k+1 (т.к. 2(k+1)+1 = 2k+3). <span class="ok">ЧТД</span></p>
+</section>
+
+<section class="card" id="deriv">
+
+<h2>Мост к матану: (xⁿ)′ = n xⁿ⁻¹ индукцией</h2>
+  <p>База: (x)′ = 1. Правило произведения: (fg)′ = f′g + fg′.</p>
+  <p><strong>Шаг.</strong> (xᵏ⁺¹)′ = (x · xᵏ)′ = 1·xᵏ + x · (k xᵏ⁻¹) = xᵏ + k xᵏ = (k+1) xᵏ. <span class="ok">✓</span></p>
+  <p class="own"><em>Своими словами.</em> Индукция — не только «суммы и делимость»; тот же шаблон работает для тождеств анализа.</p>
+</section>
+
+<section class="card" id="div">
+
+<h2>Делимость: 4ⁿ − 1 делится на 3</h2>
+  <p><strong>База n = 1:</strong> 4 − 1 = 3, делится на 3. <span class="ok">✓</span></p>
+  <p><strong>Шаг.</strong> 4ᵏ⁺¹ − 1 = 4·4ᵏ − 1 = 4(4ᵏ − 1) + 3.<br>
+  По предположению 4ᵏ − 1 ⋮ 3, значит первое слагаемое ⋮ 3; второе — явно 3. Сумма ⋮ 3. <span class="ok">ЧТД</span></p>
+  <p class="own"><em>Своими словами.</em> Переписали выражение как «кратное + кратное».</p>
+</section>
+
+<section class="card" id="tromino">
+
+<h2>Картинка: замощение 2ⁿ×2ⁿ с дыркой</h2>
+  <p>Классический сюжет сильной/обычной индукции: доска 2ⁿ×2ⁿ без одной клетки красится L‑тримино. <strong>Шаг:</strong> режем на 4 квадрата 2ⁿ⁻¹; дырка в одном; в центре трёх остальных кладём одно L‑тримино — получаем три подзадачи того же вида.</p>
+  <p class="src">На практике в тетради был чертёж «индукционный переход» с L‑фигурами — держи образ: большая задача = одна склейка + четыре меньших.</p>
+</section>
+
+<section class="card" id="strong">
+
+<h2>Сильная индукция: рекуррентность</h2>
+  <div class="def">a₁ = 3, a₂ = 5, aₙ₊₁ = 3 aₙ − 2 aₙ₋₁. Доказать aₙ = 2ⁿ + 1.</div>
+  <p><strong>База (две!):</strong> a₁ = 2+1 = 3; a₂ = 4+1 = 5. <span class="ok">✓</span></p>
+  <p><strong>Шаг (нужны P(k) и P(k−1)):</strong><br>
+  aₖ₊₁ = 3(2ᵏ+1) − 2(2ᵏ⁻¹+1) = 3·2ᵏ + 3 − 2ᵏ − 2 = 2·2ᵏ + 1 = 2ᵏ⁺¹ + 1. <span class="ok">ЧТД</span></p>
+  <div class="ex"><strong>Зачем сильная.</strong> В рекуррентности смотрим на два предыдущих члена — одного P(k) мало.</div>
+</section>
+
+<section class="card" id="task1">
+
+<h2>Задача 1. Σ n(2n+1)</h2>
+  <div class="def">Доказать: 1·3 + 2·5 + … + n(2n+1) = n(n+1)(4n+5)/6.</div>
+  <p><strong>База n = 1:</strong> слева 1·3 = 3; справа 1·2·9/6 = 3. <span class="ok">✓</span></p>
+  <p><strong>Шаг.</strong> Sₖ₊₁ = Sₖ + (k+1)(2k+3) = k(k+1)(4k+5)/6 + (k+1)(2k+3)<br>
+  = (k+1)/6 · [ k(4k+5) + 6(2k+3) ] = (k+1)/6 · (4k² + 5k + 12k + 18)<br>
+  = (k+1)/6 · (4k² + 17k + 18).</p>
+  <p>Квадратный трёхчлен: D = 289 − 288 = 1, корни k = −2 и k = −9/4.<br>
+  Значит 4k² + 17k + 18 = (k+2)(4k+9).<br>
+  Итого Sₖ₊₁ = (k+1)(k+2)(4k+9)/6 = (k+1)((k+1)+1)(4(k+1)+5)/6. <span class="ok">ЧТД</span></p>
+</section>
+
+<section class="card" id="task2">
+
+<h2>Задача 2. Гармоническая оценка</h2>
+  <div class="def">Доказать: 1 + 1/2 + 1/3 + … + 1/(2ⁿ − 1) ≤ n.</div>
+  <p><strong>База n = 1:</strong> сумма до 1/(2−1) = 1 ≤ 1. <span class="ok">✓</span></p>
+  <p><strong>Идея шага.</strong> Sₖ₊₁ = Sₖ + сумма блока новых слагаемых от 1/2ᵏ до 1/(2ᵏ⁺¹ − 1). В этом блоке ≤ 2ᵏ слагаемых, каждое ≤ 1/2ᵏ, поэтому блок ≤ 1. Тогда Sₖ₊₁ ≤ Sₖ + 1 ≤ k + 1. <span class="ok">ЧТД</span></p>
+  <p class="own"><em>Своими словами.</em> Каждый «этаж» гармонического ряда между степенями двойки добавляет не больше единицы.</p>
+</section>
+
+<section class="card" id="ineq">
+
+<h2>Задача 3. Неравенство 2ⁿ &gt; 2n + 1 (n ≥ 3)</h2>
+  <p><strong>База n = 3:</strong> 8 &gt; 7. <span class="ok">✓</span></p>
+  <p><strong>Предположение:</strong> 2ᵏ &gt; 2k + 1.</p>
+  <p><strong>Нужно:</strong> 2ᵏ⁺¹ &gt; 2(k+1)+1 = 2k+3.</p>
+  <p>2ᵏ⁺¹ = 2·2ᵏ &gt; 2(2k+1) = 4k+2 (по предположению).</p>
+  <p>Осталось: 4k+2 ≥ 2k+3 при k ≥ 3 ⇔ (4k+2)−(2k+3) = 2k−1 ≥ 2·3−1 = 5 &gt; 0. <span class="ok">Верно</span>.</p>
+  <p>Значит 2ᵏ⁺¹ &gt; 4k+2 ≥ 2k+3. <span class="ok">ЧТД</span></p>
+  <div class="fig">
+<svg viewBox="0 0 420 150" xmlns="http://www.w3.org/2000/svg">
+  <line x1="30" y1="120" x2="400" y2="120" stroke="#999"/>
+  <polyline points="40,110 80,100 120,85 160,60 200,35 240,18" fill="none" stroke="#1f5c4d" stroke-width="2"/>
+  <polyline points="40,112 80,108 120,104 160,100 200,96 240,92" fill="none" stroke="#8a4b1f" stroke-width="2"/>
+  <text x="260" y="28" font-size="13" fill="#1f5c4d">2ⁿ</text>
+  <text x="260" y="95" font-size="13" fill="#8a4b1f">2n+1</text>
+</svg>
+  <div class="caption">Экспонента обгоняет линейную; индукция фиксирует обгон с n₀ = 3.</div>
+  </div>
+</section>
+
+<section class="card" id="task4">
+
+<h2>Задача 4. 2^{3ⁿ} + 1 и степени тройки</h2>
+  <div class="def">Доказать: 2^{3ⁿ} + 1 ⋮ 3ⁿ⁺¹, но <em>не</em> ⋮ 3ⁿ⁺².</div>
+  <p><strong>База n = 1:</strong> 2³ + 1 = 9. 9 ⋮ 9 = 3², но 9 ∤ 27 = 3³. <span class="ok">✓</span></p>
+  <p><strong>Идея шага.</strong> Пусть a = 2^{3ᵏ}. Нужно смотреть a³ + 1 = 2^{3ᵏ⁺¹} + 1.<br>
+  Тождество: a³ + 1 = (a+1)(a² − a + 1).<br>
+  По предположению a+1 = 2^{3ᵏ}+1 делится ровно на 3ᵏ⁺¹ (делится на 3ᵏ⁺¹, не на 3ᵏ⁺²). Остаётся показать, что множитель a² − a + 1 даёт ровно ещё один множитель 3 (и не больше) — тогда общая степень тройки станет 3ᵏ⁺² = 3^{(k+1)+1}, и не делимость на 3^{(k+1)+2} сохранится.</p>
+  <p class="own"><em>Своими словами.</em> Это задача на «точную степень простого в разложении»: индукция по показателю + разложение a³+1. На паре базу пишут обязательно; шаг — через a³+1 = (a+1)(…).</p>
+  <p class="src">Если на зачёте попросят полный шаг — доведи аккуратно сравнение a² − a + 1 по модулю 9 (чтобы увидеть ровно одну тройку).</p>
+</section>
+
+<section class="card" id="cheat">
+
+<h2>Что взять с собой</h2>
+  <div class="cheat">
+    <ul>
+      <li>Всегда явно: база (с правильным n₀) + шаг</li>
+      <li>В шаге один раз «честно» используй предположение</li>
+      <li>Рекуррентность на 2 шага назад → две базы / сильная индукция</li>
+      <li>Делимость: перепиши как «кратное + кратное»</li>
+      <li>Неравенства: часто нужно усилить оценку (запас 4k+2 ≥ 2k+3)</li>
+      <li>В конце шага узнай формулу при n = k+1 — это и есть цель</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="video">
+
+<h2>Видео по теме</h2>
+  <p class="video"><a href="https://www.youtube.com/watch?v=wqib_2F9z0Q" target="_blank" rel="noopener">YouTube — Метод математической индукции (идея и примеры)</a></p>
+</section>
+</main>
+</body>
+</html>
+

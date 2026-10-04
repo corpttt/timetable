@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Тетради">
+  <meta name="description" content="Учебные тетради Б84">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <title>Тетради</title>
+  <link rel="stylesheet" href="./styles.css?v=14">
+  <script src="./theme.js?v=14"></script>
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <a class="brand" href="./notebooks.html">
+        <span class="brand-mark">≡</span>
+        <span>тетради</span>
+      </a>
+      <div class="header-actions">
+        <a class="btn" href="./index.html">Расписание</a>
+        <button type="button" class="btn" id="btn-theme" title="Тема">◑</button>
+        <button type="button" class="btn" id="btn-refresh-nb" title="Обновить список">↻</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="status-line" id="nb-status">Загрузка…</p>
+    <p class="now-hint">Отдельная страница от расписания — можно держать две вкладки.</p>
+    <div id="nb-list" class="nb-list"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="./notebooks.js?v=14"></script>
+</body>
+</html>

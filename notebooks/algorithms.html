@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Алгоритмы · тетрадь (лекции 1–2 + семинары)</title>
+<style>
+:root {
+  --bg: #f6f4ef; --card: #fff; --ink: #1c1b19; --muted: #6b665c;
+  --line: #e2ddd2; --acc: #1f5c4d; --acc2: #8a4b1f; --soft: #e8f1ee;
+  --warn: #fff4e5; --code: #f0ebe3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font: 16px/1.55 "Segoe UI", "Cambria Math", "Segoe UI Symbol", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+header { max-width: 54rem; margin: 0 auto; padding: 1.2rem 1.2rem 0.6rem; }
+h1 { font-size: 1.45rem; margin: 0 0 0.25rem; }
+.note { color: var(--muted); font-size: 0.92rem; margin: 0 0 0.7rem; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.5rem; }
+nav.toc a { text-decoration: none; color: var(--acc); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 0.28rem 0.7rem; font-size: 0.86rem; }
+main { max-width: 54rem; margin: 0 auto 3rem; padding: 0 1.2rem; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.15rem 1.25rem; margin: 0 0 0.95rem; }
+h2 { font-size: 1.18rem; margin: 0 0 0.55rem; color: var(--acc); }
+h3 { font-size: 1.02rem; margin: 1.05rem 0 0.4rem; }
+p { margin: 0.45rem 0; }
+ul, ol { margin: 0.35rem 0 0.55rem; padding-left: 1.25rem; }
+li { margin: 0.28rem 0; }
+.def { border-left: 3px solid var(--acc); background: var(--soft); padding: 0.55rem 0.8rem; border-radius: 0 8px 8px 0; margin: 0.55rem 0; }
+.own { color: #333; }
+.ex { border-left: 3px solid var(--acc2); background: var(--warn); padding: 0.55rem 0.8rem; border-radius: 0 8px 8px 0; margin: 0.55rem 0; }
+.cheat { background: var(--code); border: 1px dashed var(--line); border-radius: 10px; padding: 0.7rem 0.9rem; }
+.fig { margin: 0.75rem 0; padding: 0.55rem; background: #faf9f6; border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+.fig svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.fig svg text { fill: #1c1b19; }
+.fig svg text.node-label { fill: #fff; }
+.caption { color: var(--muted); font-size: 0.88rem; text-align: center; margin-top: 0.35rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.94rem; margin: 0.5rem 0; }
+th, td { border: 1px solid var(--line); padding: 0.4rem 0.55rem; text-align: left; vertical-align: top; }
+th { background: var(--soft); }
+code, .mono { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; }
+pre.cheat { white-space: pre-wrap; font-family: ui-monospace, Consolas, monospace; font-size: 0.9rem; }
+.video a { color: var(--acc); font-weight: 600; }
+.src { color: var(--muted); font-size: 0.88rem; }
+.tag { display: inline-block; font-size: 0.75rem; padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--soft); color: var(--acc); margin-right: 0.25rem; }
+.formula-box {
+  margin: 0.9rem 0; padding: 0.85rem 1rem 0.95rem; border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--acc) 35%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 8%, var(--card)), var(--card));
+}
+.formula-box-label {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--acc); margin-bottom: 0.35rem;
+}
+.formula-box-body {
+  font-family: "Cambria Math", "Segoe UI Symbol", "Segoe UI", serif;
+  font-size: 1.12rem; line-height: 1.45;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Алгоритмы · тетрадь</h1>
+  <p class="note">Лекции 1–2 (Пальченков): асимптотика · Карацуба · структуры · префиксы · два указателя · стек/дек + практика 1 и 30 задач к лекции 2</p>
+  <nav class="toc">
+    <a href="#intro">Введение</a>
+    <a href="#ops">Операции</a>
+    <a href="#nested">Вложенные циклы</a>
+    <a href="#asymp">O, Θ, Ω</a>
+    <a href="#asymp-proof">Как доказывать</a>
+    <a href="#poly">Многочлен</a>
+    <a href="#karatsuba">Карацуба</a>
+    <a href="#karatsuba-naive">4 умножения</a>
+    <a href="#karatsuba-trick">Трюк с 3</a>
+    <a href="#karatsuba-ex">Примеры</a>
+    <a href="#karatsuba-time">Сложность</a>
+    <a href="#tree">Дерево рекурсии</a>
+    <a href="#master">Мастер-теорема</a>
+    <a href="#master-cases">Три случая</a>
+    <a href="#loops">Циклы</a>
+    <a href="#practice">Практика 1</a>
+    <a href="#lec2-intro">Лекция 2</a>
+    <a href="#machine">Память-кубики</a>
+    <a href="#prefix">Префиксы</a>
+    <a href="#diff">Разности</a>
+    <a href="#structs">Структуры</a>
+    <a href="#min-stack">Min на стеке</a>
+    <a href="#seminar-easy">Семинар 1–7</a>
+    <a href="#seminar-mid">Семинар 8–21</a>
+    <a href="#seminar-hard">Семинар 22–30</a>
+    <a href="#cheat">Шпаргалка</a>
+    <a href="#video">Видео</a>
+  </nav>
+</header>
+<main>
+
+<section class="card" id="intro">
+  <h2>Введение</h2>
+  <p>Сквозная тетрадь по первой паре алгоритмов (03.09.2026) и листку <span class="mono">practice-1-tasks.pdf</span>. Цель — не «угадывать» порядок роста, а уметь <em>вывести</em> его из циклов и рекуррентностей: посчитать операции, узнать O/Θ, применить мастер-теорему, понять Карацубу.</p>
+  <p>На паре шли цепочкой: линейка «сколько оп/сек» → вложенные циклы → язык асимптотики → число как многочлен → умножение / Карацуба → дерево рекурсии → мастер-теорема. Ниже — тот же порядок, но с развёрткой и примерами.</p>
+  <p class="src">Markdown: <span class="mono">03.09-асимптотика-умножение-мастер-теорема.md</span> · <span class="mono">лекция-2-структуры-данных.md</span>. PDF: <span class="mono">lectures-1-2-styled.pdf</span>, <span class="mono">lecture2-problems-30.pdf</span>.</p>
+</section>
+
+<section class="card" id="ops">
+
+<h2>Что такое алгоритм и зачем считать операции</h2>
+  <div class="def"><strong>Определение.</strong> <em>Алгоритм</em> — конечное однозначное предписание: последовательность команд, которые исполнитель выполняет шаг за шагом.</div>
+  <p class="own"><em>Своими словами.</em> Рецепт для компьютера. «Однозначное» значит: на каждом шаге ясно, что делать дальше (нет «ну, примерно так»).</p>
+  <div class="ex"><strong>Пример.</strong> «Сложить все элементы массива a[0…n−1]»: положить s = 0; для i от 0 до n−1 делать s = s + a[i]; вернуть s. Это алгоритм.<br>
+  <strong>Не-пример.</strong> «Найди красивое решение» — не алгоритм: нет конечного списка проверяемых шагов.</div>
+  <p><strong>Почему не секунды на ноутбуке?</strong> Один и тот же код на разном железе даёт разное время; сравнивать алгоритмы так нельзя. Сравнивают <strong>число элементарных операций</strong> как функцию размера входа n (длина массива, число цифр, …).</p>
+  <div class="def"><strong>Линейка железа (с пары).</strong> Процессор ≈ 2.3 GHz → грубо ~ 2·10⁹ тактов/сек. Не каждый такт = полезная операция: осторожная оценка ~10⁸–4·10⁸ полезных операций в секунду. В олимпиадной культуре часто держат ~10⁸ оп/сек.</div>
+  <div class="ex"><strong>Как пользоваться линейкой.</strong> Алгоритм делает ~ n² сравнений, n = 10⁴ → ~10⁸ операций → около секунды на грани. Если n = 10⁶ и алгоритм n² → ~10¹² — за секунду не уложится. Линейный проход n = 10⁶ — нормально.</div>
+  <p class="own"><em>Своими словами.</em> Это не теорема, а линейка «влезет ли в лимит времени». Дальше важнее <em>порядок роста</em>, а не точная константа.</p>
+</section>
+
+<section class="card" id="nested">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест что-такое-алгоритм-и-зачем-с</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Пример: вложенные циклы и ≈ n²</h2>
+  <p>На доске схема вроде:</p>
+  <pre class="cheat">for i = 0 … n:
+    for j = 0 … i:
+        ans += …   # константа «мелких» операций, на паре множитель 5</pre>
+  <p><strong>Шаг 1.</strong> Зафиксируй i. Внутренний цикл делает примерно i+1 шагов (j от 0 до i).</p>
+  <p><strong>Шаг 2.</strong> Сложи по всем i:</p>
+  <div class="def">0 + 1 + 2 + … + n = n(n+1)/2.</div>
+  <p><strong>Шаг 3.</strong> Если внутри ещё константа k мелких операций (на доске k = 5):</p>
+  <div class="def">T(n) = 5 · n(n+1)/2 = (5/2) n² + (5/2) n.</div>
+  <p>При больших n доминирует (5/2)n² → говорят «порядка n²» или Θ(n²).</p>
+  <div class="fig">
+<svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
+  <text x="20" y="24" font-size="13">число шагов внутреннего цикла</text>
+  <rect x="40" y="160" width="28" height="20" fill="#1f5c4d"/><text x="54" y="190" text-anchor="middle" font-size="11">i=0</text>
+  <rect x="80" y="140" width="28" height="40" fill="#1f5c4d"/><text x="94" y="190" text-anchor="middle" font-size="11">1</text>
+  <rect x="120" y="120" width="28" height="60" fill="#1f5c4d"/><text x="134" y="190" text-anchor="middle" font-size="11">2</text>
+  <rect x="160" y="100" width="28" height="80" fill="#1f5c4d"/><text x="174" y="190" text-anchor="middle" font-size="11">3</text>
+  <rect x="200" y="80" width="28" height="100" fill="#3a7a68"/><text x="214" y="190" text-anchor="middle" font-size="11">…</text>
+  <rect x="240" y="40" width="28" height="140" fill="#8a4b1f"/><text x="254" y="190" text-anchor="middle" font-size="11">n</text>
+  <text x="300" y="90" font-size="13">площадь ≈</text>
+  <text x="300" y="112" font-size="14" font-weight="700">n(n+1)/2</text>
+  <text x="300" y="134" font-size="13">≈ n² / 2</text>
+</svg>
+  <div class="caption">«Треугольник» итераций: сумма высот 0…n даёт квадрат по порядку.</div>
+  </div>
+  <div class="ex"><strong>Числа.</strong> n = 10 → сумма = 55, с множителем 5 → T ≈ 275. n = 100 → сумма = 5050, T ≈ 25250. Рост в ≈ 100 раз при n×10 — как у квадрата.</div>
+  <p class="own"><em>Своими словами.</em> Два вложенных цикла «до i» → квадрат. Константа 5 при больших n почти не важна — важен порядок.</p>
+</section>
+
+<section class="card" id="asymp">
+
+<h2>Асимптотика: O, Θ, Ω, o, ω</h2>
+  <p>Нужен язык: «f растёт не быстрее g», «тот же порядок», «строго медленнее». Это и есть большая O и компания.</p>
+  <table>
+    <tr><th>Знак</th><th>Интуиция</th><th>Картинка</th></tr>
+    <tr><td>f = O(g)</td><td>f ≲ g — верхняя оценка</td><td>f не выше C·g с какого-то N</td></tr>
+    <tr><td>f = Ω(g)</td><td>f ≳ g — нижняя оценка</td><td>f не ниже C·g</td></tr>
+    <tr><td>f = Θ(g)</td><td>f ≍ g — один порядок</td><td>зажат между C₁g и C₂g</td></tr>
+    <tr><td>f = o(g)</td><td>f ≪ g — строго медленнее</td><td>f/g → 0</td></tr>
+    <tr><td>f = ω(g)</td><td>f ≫ g</td><td>f/g → ∞</td></tr>
+  </table>
+  <div class="formula-box" role="note">
+    <div class="formula-box-label">Порядок роста</div>
+    <div class="formula-box-body">f = O(g) — верхняя оценка  f = Θ(g) — тот же порядок</div>
+  </div>
+  <div class="def"><strong>Θ (как на паре).</strong> f = Θ(g), если ∃ N &gt; 0, C₁ &gt; 0, C₂ &gt; 0 такие, что для всех n ≥ N:<br>
+  C₁ · g(n) ≤ f(n) ≤ C₂ · g(n).</div>
+  <div class="def"><strong>O.</strong> f = O(g), если ∃ N, C &gt; 0: ∀ n ≥ N выполняется 0 ≤ f(n) ≤ C · g(n).<br>
+  <strong>Ω.</strong> f = Ω(g), если ∃ N, C &gt; 0: ∀ n ≥ N выполняется f(n) ≥ C · g(n).</div>
+  <p class="own"><em>Своими словами.</em> «С какого-то момента для всех n…» — тот же дух, что ε‑δ в матанализе, только вместо ε — константы C. Запись f = O(g) лучше читать «f принадлежит классу O(g)»; поэтому «O(g) = f» бессмысленно.</p>
+  <div class="fig">
+<svg viewBox="0 0 540 200" xmlns="http://www.w3.org/2000/svg">
+  <line x1="50" y1="180" x2="510" y2="180" stroke="#999"/><line x1="50" y1="180" x2="50" y2="20" stroke="#999"/>
+  <text x="520" y="184" font-size="13">n</text><text x="30" y="18" font-size="13">T</text>
+  <path d="M 60 175 Q 150 155 240 115 T 500 40" fill="none" stroke="#1f5c4d" stroke-width="2" stroke-dasharray="5 3"/>
+  <path d="M 60 172 Q 150 150 240 110 T 500 50" fill="none" stroke="#8a4b1f" stroke-width="2.5"/>
+  <path d="M 60 168 Q 150 145 240 105 T 500 62" fill="none" stroke="#1f5c4d" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="430" y="38" font-size="12" fill="#1f5c4d">C₂ g</text>
+  <text x="440" y="55" font-size="13" fill="#8a4b1f" font-weight="700">f</text>
+  <text x="435" y="72" font-size="12" fill="#1f5c4d">C₁ g</text>
+  <text x="200" y="25" font-size="13">f = Θ(g)</text>
+</svg>
+  <div class="caption">Θ: кривая f зажата между двумя кратными g.</div>
+  </div>
+  <p><strong>Шкала роста (запомни порядок):</strong></p>
+  <p class="cheat mono" style="text-align:center">log n ≪ (log n)² ≪ √n ≪ n ≪ n log n ≪ n¹·¹ ≪ n² ≪ 2ⁿ ≪ n!</p>
+  <div class="ex"><strong>Пример.</strong> 3n² + 10n + 1 = Θ(n²): доминирует n².<br>
+  <strong>Не-пример.</strong> n³ ≠ O(n²): отношение n³/n² = n → ∞, никакая константа C не удержит для всех больших n.<br>
+  Школьное умножение n-значных — O(n²); Карацуба показывает, что квадрат — не предел.</div>
+</section>
+
+<section class="card" id="asymp-proof">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест асимптотика</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Как на практике «доказывать» O и Θ</h2>
+  <h3>Показать f = O(g)</h3>
+  <p>Нужно найти C и N такие, что f(n) ≤ C·g(n) при n ≥ N. Часто берут «все младшие члены ≤ главному».</p>
+  <div class="ex"><strong>Показать:</strong> 3n² + 10n + 1 = O(n²).<br>
+  При n ≥ 1: 10n ≤ 10n², 1 ≤ n² → 3n²+10n+1 ≤ 3n²+10n²+n² = 14n². Берём C = 14, N = 1. ✓</div>
+
+<h3>Показать f = Θ(g)</h3>
+  <p>Нужны и верх, и низ. Верх — как для O. Низ: отбросить положительные младшие или оценить снизу главным членом.</p>
+  <div class="ex"><strong>Тот же f = 3n²+10n+1.</strong> Снизу: f(n) ≥ 3n² при всех n ≥ 0. Значит C₁ = 3, C₂ = 14 → Θ(n²). ✓</div>
+
+<h3>Показать, что НЕ O</h3>
+  <p>Доказать: ∀ C, N найдётся n ≥ N с f(n) &gt; C·g(n). Обычно смотрят предел f/g = ∞.</p>
+  <div class="ex">n³ / n² = n → ∞ ⇒ n³ ≠ O(n²).</div>
+
+<h3>Частые ловушки</h3>
+  <ul>
+    <li>O — <em>верхняя</em> оценка: n = O(n²) — правда (медленное «влезает» в быстрое сверху).</li>
+    <li>Θ симметрична: f=Θ(g) ⟺ g=Θ(f). O — нет: из f=O(g) не следует g=O(f).</li>
+    <li>O(1) значит «ограничено константой», не обязательно ровно одна операция.</li>
+    <li>Смена основания логарифма: log₂ n = Θ(log₁₀ n) (множитель 1/ln 10 — константа).</li>
+  </ul>
+</section>
+
+<section class="card" id="poly">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест как-на-практике-доказывать-o</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Число как многочлен; умножение через многочлены</h2>
+  <div class="def"><strong>Многочлен степени n:</strong> A(x) = a₀ + a₁ x + a₂ x² + … + aₙ xⁿ.</div>
+  <p>Любое число в позиционной системе — тот же многочлен, где <strong>x = основание системы</strong>.</p>
+  <div class="ex"><strong>Пример.</strong> 12345 в десятичной:<br>
+  12345 = 5·10⁰ + 4·10¹ + 3·10² + 2·10³ + 1·10⁴.<br>
+  Замени 10 на переменную x → многочлен A(x) = 5 + 4x + 3x² + 2x³ + x⁴. На паре: «x — просто переменная»; «10 сс» = десятичная система.</div>
+  <p><strong>Зачем это для умножения.</strong> Чтобы умножить числа A и B:</p>
+  <ol>
+    <li>взять их многочлены A(x), B(x);</li>
+    <li>перемножить многочлены (как в алгебре);</li>
+    <li>подставить x = основание (10) и разобраться с переносами, если коэффициент ≥ 10.</li>
+  </ol>
+  <div class="def">Коротко: A × B ↔ A(x)·B(x) при x = основание.</div>
+  <div class="ex"><strong>Крошечный пример.</strong> 23 · 45. Многочлены: 2x+3 и 4x+5.<br>
+  (2x+3)(4x+5) = 8x² + 10x + 12x + 15 = 8x² + 22x + 15.<br>
+  x=10: 8·100 + 22·10 + 15 = 1035. ✓ (переносов не понадобилось — коэффициенты &lt; 10, кроме того что 22 уже «как бы с переносом», но при подстановке всё честно).</div>
+  <p class="own"><em>Своими словами.</em> Большое число — «многочлен, посчитанный в точке 10». Умножать числа ≈ умножать такие многочлены. Дальше — как умножать многочлены быстрее, разрезая пополам (Карацуба).</p>
+</section>
+<section class="card" id="karatsuba">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест число-как-многочлен-умножени</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Карацуба: зачем вообще что‑то выдумывать</h2>
+  <p>Школьное умножение «в столбик» двух n‑значных чисел: каждую цифру первого умножаешь на каждую цифру второго → порядка <strong>n × n = n²</strong> одноразрядных умножений. При больших n это дорого.</p>
+  <p class="own"><em>Своими словами.</em> Цель Карацубы — умножать длинные числа <em>быстрее, чем n²</em>, разрезая их пополам и аккуратно экономя тяжёлые умножения половин.</p>
+  <p>Дальше удобно думать так: число = «две половины». Для десятичной системы с чётным числом цифр:</p>
+  <div class="def">Пусть у числа n цифр, m = n/2. Тогда<br>
+  X = A · 10ᵐ + B, &nbsp; Y = C · 10ᵐ + D,<br>
+  где A, B, C, D — числа примерно с m цифрами (старшая и младшая половины).</div>
+  <div class="ex"><strong>Пример разреза.</strong> X = 23, Y = 45, берём m = 1 (половина «по одной цифре»):<br>
+  23 = 2·10 + 3 → A = 2, B = 3;<br>
+  45 = 4·10 + 5 → C = 4, D = 5.</div>
+  <div class="fig">
+<svg viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+  <rect x="40" y="30" width="90" height="50" rx="8" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="85" y="50" text-anchor="middle" font-size="14" font-weight="700">A</text>
+  <text x="85" y="68" text-anchor="middle" font-size="12">старшая</text>
+  <rect x="140" y="30" width="90" height="50" rx="8" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <text x="185" y="50" text-anchor="middle" font-size="14" font-weight="700">B</text>
+  <text x="185" y="68" text-anchor="middle" font-size="12">младшая</text>
+  <text x="280" y="55" font-size="15">= X</text>
+  <text x="40" y="110" font-size="14">X = A · 10ᵐ + B</text>
+  <text x="40" y="135" font-size="13" fill="#6b665c">то же для Y = C · 10ᵐ + D</text>
+</svg>
+  <div class="caption">Каждое число режем на старшую и младшую половины.</div>
+  </div>
+</section>
+
+<section class="card" id="karatsuba-naive">
+
+<h2>Наивный «разделяй и властвуй»: 4 умножения</h2>
+  <p>Раскроем скобки (школьная алгебра):</p>
+  <div class="def">X·Y = (A·10ᵐ + B)(C·10ᵐ + D)<br>
+  = AC · 10²ᵐ + (AD + BC) · 10ᵐ + BD.</div>
+  <p>Три «блока» результата:</p>
+  <ol>
+    <li><strong>AC</strong> — сдвигаем на 2m разрядов влево (× 10²ᵐ);</li>
+    <li><strong>AD + BC</strong> — сдвигаем на m разрядов (× 10ᵐ);</li>
+    <li><strong>BD</strong> — без сдвига.</li>
+  </ol>
+  <p>Чтобы получить все три блока, кажется, нужны <strong>четыре</strong> умножения половин: AC, AD, BC, BD. Сложения и сдвиги дешёвые (линейные по длине числа), а вот умножение половин — дорогое, его и считаем в рекуррентности.</p>
+  <div class="ex"><strong>Те же 23 × 45.</strong><br>
+  AC = 2·4 = 8;<br>
+  AD = 2·5 = 10; &nbsp; BC = 3·4 = 12; &nbsp; AD+BC = 22;<br>
+  BD = 3·5 = 15;<br>
+  Итог: 8·100 + 22·10 + 15 = 800 + 220 + 15 = <strong>1035</strong>. Проверка: 23·45 = 1035. ✓</div>
+  <p><strong>Сложность.</strong> T(n) = 4 T(n/2) + O(n). По мастер-теореме a=4, b=2, c=1 → q = 4/2 = 2 → T = Θ(n^{log₂ 4}) = Θ(n²). Разрезали пополам, а порядок <em>тот же квадрат</em> — выигрыша нет.</p>
+  <p class="own"><em>Своими словами.</em> Резать пополам полезно только если число тяжёлых умножений станет <em>меньше четырёх</em>.</p>
+</section>
+
+<section class="card" id="karatsuba-trick">
+
+<h2>Трюк Карацубы: как обойтись тремя умножениями</h2>
+  <p>Смотрим на тождество (просто раскрой правую часть):</p>
+  <div class="def">(A + B)(C + D) = AC + AD + BC + BD = AC + BD + (AD + BC).</div>
+  <p>Отсюда середина, которая нам нужна:</p>
+  <div class="def"><strong>AD + BC = (A + B)(C + D) − AC − BD.</strong></div>
+  <p class="own"><em>Своими словами.</em> Вместо двух умножений AD и BC делаем <em>одно</em> умножение сумм (A+B)·(C+D), а потом вычитаем уже известные AC и BD. Вычитание — дёшево; умножение — дорого.</p>
+  <p>Алгоритм Карацубы на одном уровне:</p>
+  <ol>
+    <li>P₀ = A · C &nbsp; (одно умножение половин)</li>
+    <li>P₂ = B · D &nbsp; (второе)</li>
+    <li>P₁ = (A + B)(C + D) − P₀ − P₂ &nbsp; (третье умножение + два вычитания)<br>
+        после этого P₁ = AD + BC</li>
+    <li>Собрать ответ: X·Y = P₀ · 10²ᵐ + P₁ · 10ᵐ + P₂</li>
+  </ol>
+  <div class="fig">
+<svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="20" width="100" height="40" rx="6" fill="#e8f1ee" stroke="#1f5c4d"/><text x="70" y="45" text-anchor="middle" font-size="13">P₀ = A·C</text>
+  <rect x="140" y="20" width="100" height="40" rx="6" fill="#e8f1ee" stroke="#1f5c4d"/><text x="190" y="45" text-anchor="middle" font-size="13">P₂ = B·D</text>
+  <rect x="260" y="20" width="160" height="40" rx="6" fill="#fff4e5" stroke="#8a4b1f"/><text x="340" y="45" text-anchor="middle" font-size="13">(A+B)(C+D)</text>
+  <path d="M70 60 L70 90 L340 90 L340 110" fill="none" stroke="#1f5c4d" stroke-width="1.5"/>
+  <path d="M190 60 L190 90" fill="none" stroke="#1f5c4d" stroke-width="1.5"/>
+  <path d="M340 60 L340 110" fill="none" stroke="#8a4b1f" stroke-width="1.5"/>
+  <rect x="200" y="115" width="280" height="40" rx="6" fill="#e8f1ee" stroke="#1f5c4d"/>
+  <text x="340" y="140" text-anchor="middle" font-size="13">P₁ = (A+B)(C+D) − P₀ − P₂</text>
+  <text x="280" y="180" font-size="14">ответ = P₀·10²ᵐ + P₁·10ᵐ + P₂</text>
+</svg>
+  <div class="caption">Три тяжёлых умножения → собираем три блока результата.</div>
+  </div>
+</section>
+
+<section class="card" id="karatsuba-ex">
+
+<h2>Тот же пример целиком: 23 × 45</h2>
+  <p>A=2, B=3, C=4, D=5, m=1.</p>
+  <ol>
+    <li>P₀ = A·C = 2·4 = <strong>8</strong></li>
+    <li>P₂ = B·D = 3·5 = <strong>15</strong></li>
+    <li>(A+B)=5, (C+D)=9 → 5·9 = 45<br>
+        P₁ = 45 − 8 − 15 = <strong>22</strong> &nbsp;(это как раз AD+BC = 10+12)</li>
+    <li>ответ = 8·10² + 22·10¹ + 15 = 800 + 220 + 15 = <strong>1035</strong></li>
+  </ol>
+  <div class="ex"><strong>Ещё один пример, подлиннее: 1234 × 5678.</strong><br>
+  Режем по 2 цифры (m=2, основание 100): A=12, B=34, C=56, D=78.<br>
+  P₀ = 12·56 = 672;<br>
+  P₂ = 34·78 = 2652;<br>
+  (A+B)=46, (C+D)=134 → 46·134 = 6164;<br>
+  P₁ = 6164 − 672 − 2652 = 2840;<br>
+  ответ = 672·10000 + 2840·100 + 2652 = 6 720 000 + 284 000 + 2652 = <strong>7 006 652</strong>.<br>
+  Проверка: 1234·5678 = 7 006 652. ✓</div>
+  <p class="own"><em>Своими словами.</em> На бумаге для 2‑значных чисел Карацуба выглядит избыточно. Смысл — когда A, B, C, D сами длинные: каждое «·» снова режется рекурсивно теми же тремя умножениями.</p>
+</section>
+
+<section class="card" id="karatsuba-time">
+
+<h2>Почему это быстрее n²</h2>
+  <p>На каждом уровне: <strong>3</strong> рекурсивных умножения половин + O(n) на сложения/вычитания/сдвиги.</p>
+  <div class="def">T(n) = 3 T(n/2) + O(n).</div>
+  <p>Мастер-теорема: a=3, b=2, c=1 → q = 3/2 = 1.5 &gt; 1 → T = Θ(n^{log₂ 3}).</p>
+  <p>log₂ 3 ≈ 1.585, поэтому ≈ Θ(n¹·⁵⁸⁵). Это уже <em>строго медленнее квадрата</em>: при больших n Карацуба обгоняет «столбик».</p>
+  <table>
+    <tr><th>Метод</th><th>Тяжёлых умножений половин</th><th>Порядок</th></tr>
+    <tr><td>столбик / 4 произведения</td><td>4</td><td>Θ(n²)</td></tr>
+    <tr><td>Карацуба</td><td>3</td><td>Θ(n^{log₂ 3}) ≈ Θ(n¹·⁵⁸⁵)</td></tr>
+  </table>
+  <div class="ex"><strong>Когда не гонять Карацубу.</strong> На маленьких n константы, сложения и накладные расходы рекурсии съедают выигрыш (задача 16 с практики). В коде обычно: «если длина &lt; порога — умножай в лоб». Асимптотика — про <em>большие</em> входы.</div>
+  <p class="src">Слово «Фурье» на паре — намёк на ещё более быстрое умножение через FFT; это следующий уровень после Карацубы, пока достаточно знать: квадрат — не предел.</p>
+</section>
+
+
+<section class="card" id="tree">
+
+<h2>Рекуррентности и дерево рекурсии</h2>
+  <div class="def"><strong>Рекуррентность для времени</strong> — формула «время на размере n через время на меньших размерах».</div>
+  <div class="def">Каркас с пары: T(n) = a · T(n/b) + f(n).<br>
+  a подзадач размера n/b, плюс работа f(n) «снаружи» (слияние, сложения, …).</div>
+  <p class="own"><em>Своими словами.</em> Разделил задачу → решил куски → склеил. Время = время кусков + склейка.</p>
+
+<h3>Как читать дерево</h3>
+  <ul>
+    <li>Корень: размер n, работа на этом уровне ≈ f(n).</li>
+    <li>Уровень 1: a узлов размера n/b.</li>
+    <li>Уровень i: aⁱ узлов размера n/bⁱ.</li>
+    <li>Глубина до «листьев» размера ≈ 1: около log_b n уровней.</li>
+  </ul>
+  <p>Если f(n) = nᶜ, работа уровня i:</p>
+  <div class="def">aⁱ · (n/bⁱ)ᶜ = nᶜ · (a / bᶜ)ⁱ = nᶜ · qⁱ, &nbsp; где q = a/bᶜ.</div>
+  <p>Полное время ≈ nᶜ · (1 + q + q² + … + qᴸ), L ≈ log_b n — сумма геометрической прогрессии.</p>
+  <div class="fig">
+<svg viewBox="0 0 560 230" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="280" cy="28" r="16" fill="#1f5c4d"/><text x="280" y="33" text-anchor="middle" fill="#fff" font-size="12" class="node-label">n</text>
+  <line x1="280" y1="44" x2="140" y2="78" stroke="#1f5c4d"/><line x1="280" y1="44" x2="280" y2="78" stroke="#1f5c4d"/><line x1="280" y1="44" x2="420" y2="78" stroke="#1f5c4d"/>
+  <circle cx="140" cy="95" r="14" fill="#3a7a68"/><text x="140" y="99" text-anchor="middle" fill="#fff" font-size="10" class="node-label">n/b</text>
+  <circle cx="280" cy="95" r="14" fill="#3a7a68"/><text x="280" y="99" text-anchor="middle" fill="#fff" font-size="10" class="node-label">n/b</text>
+  <circle cx="420" cy="95" r="14" fill="#3a7a68"/><text x="420" y="99" text-anchor="middle" fill="#fff" font-size="10" class="node-label">n/b</text>
+  <text x="480" y="100" font-size="12">a штук</text>
+  <line x1="140" y1="109" x2="100" y2="145" stroke="#1f5c4d"/><line x1="140" y1="109" x2="160" y2="145" stroke="#1f5c4d"/>
+  <circle cx="100" cy="160" r="12" fill="#5a9a88"/><text x="100" y="164" text-anchor="middle" fill="#fff" font-size="9" class="node-label">n/b²</text>
+  <circle cx="160" cy="160" r="12" fill="#5a9a88"/><text x="160" y="164" text-anchor="middle" fill="#fff" font-size="9" class="node-label">n/b²</text>
+  <text x="220" y="165" font-size="16">…</text>
+  <text x="20" y="33" font-size="12" fill="#8a4b1f">ур. 0</text>
+  <text x="20" y="100" font-size="12" fill="#8a4b1f">ур. 1</text>
+  <text x="20" y="165" font-size="12" fill="#8a4b1f">ур. 2</text>
+  <text x="20" y="210" font-size="12">работа ур. i: nᶜ · qⁱ</text>
+</svg>
+  <div class="caption">Дерево: a ветвей из каждого узла, глубина ~ log_b n.</div>
+  </div>
+  <div class="ex"><strong>Пример с пары.</strong> T(n) = 3 T(⌊n/2⌋) + O(n) — три подзадачи половины, склейка линейная. Это как раз Карацуба: потом получим O(n^{log₂ 3}) ≈ O(n¹·⁵⁸).<br>
+  Другая картинка: корень n → три ребёнка n/3 → … для T(n) = 3 T(n/3) + …</div>
+</section>
+
+<section class="card" id="master">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест рекуррентности-и-дерево-реку</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Мастер-теорема: постановка и q</h2>
+  <div class="def">T(n) = a T(n/b) + nᶜ, &nbsp; где a ≥ 1, b ≥ 2, c ≥ 0.<br>
+  Глубина дерева L ≈ log_b n.<br>
+  <strong>q = a / bᶜ</strong> — отношение «сколько подзадач» / «насколько дешевеет работа nᶜ при уменьшении размера».</div>
+  <p>Работа уровней: nᶜ, nᶜ q, nᶜ q², … Сумма геометрической прогрессии:</p>
+  <div class="def">1 + q + q² + … + qᴸ = (qᴸ⁺¹ − 1)/(q − 1) &nbsp; (если q ≠ 1); &nbsp; при q = 1 сумма = L+1 ≈ log_b n.</div>
+  <p class="own"><em>Своими словами.</em> Смотришь на q: работа по уровням <em>растёт</em>, <em>падает</em> или <em>стоит</em>. От этого зависит, кто побеждает — корень, листья или все уровни вместе.</p>
+</section>
+
+<section class="card" id="master-cases">
+
+<h2>Три случая мастер-теоремы</h2>
+  <table>
+    <tr><th>Условие</th><th>Ответ</th><th>Интуиция</th></tr>
+    <tr><td>q &lt; 1</td><td>T = Θ(nᶜ)</td><td>работа убывает вниз → доминирует «верх» (корень)</td></tr>
+    <tr><td>q = 1</td><td>T = Θ(nᶜ log n)</td><td>на каждом уровне ≈ nᶜ, уровней log → умножить на log</td></tr>
+    <tr><td>q &gt; 1</td><td>T = Θ(n^{log_b a})</td><td>работа растёт вниз → доминируют листья; a^{log_b n} = n^{log_b a}</td></tr>
+  </table>
+
+<h3>Почему при q &gt; 1 появляется log_b a</h3>
+  <p>Число листьев ≈ aᴸ, L = log_b n → a^{log_b n}. Известное тождество: a^{log_b n} = n^{log_b a}. Каждый лист — константа работы → порядок n^{log_b a}.</p>
+
+<h3>Разобранные примеры</h3>
+  <div class="ex"><strong>4 умножения половин.</strong> a=4, b=2, c=1 → q = 4/2 = 2 &gt; 1 → Θ(n^{log₂ 4}) = Θ(n²).</div>
+  <div class="ex"><strong>Карацуба.</strong> a=3, b=2, c=1 → q = 1.5 &gt; 1 → Θ(n^{log₂ 3}) ≈ Θ(n¹·⁵⁸⁵).</div>
+  <div class="ex"><strong>Mergesort.</strong> T(n)=2T(n/2)+n → a=2,b=2,c=1 → q=1 → Θ(n log n).</div>
+  <div class="ex"><strong>q &lt; 1.</strong> T(n)=2T(n/2)+n² → q = 2/4 = ½ &lt; 1 → Θ(n²): склейка наверху дороже всей «нижней» работы.</div>
+  <div class="ex"><strong>Бинарный поиск / T(n)=T(n/2)+1.</strong> a=1,b=2,c=0 (n⁰=1) → q = 1/1 = 1 → Θ(log n).</div>
+  <p class="src">На доске иногда писали O вместо Θ — для «порядка» на практике часто имеют в виду тот же класс. Аккуратнее в ответах практики ставить Θ, когда зажаты сверху и снизу.</p>
+</section>
+
+<section class="card" id="loops">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест три-случая-мастер-теоремы</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Как читать циклы (с выводом, не только таблица)</h2>
+  <h3>1. Один цикл до n</h3>
+  <pre class="cheat">for i = 1 … n:  // тело O(1)
+→ n итераций → Θ(n)</pre>
+
+<h3>2. Шаг 2</h3>
+  <pre class="cheat">for i = 1; i ≤ n; i += 2
+→ примерно n/2 итераций → всё ещё Θ(n) (константа 1/2 не меняет порядок)</pre>
+
+<h3>3. Удвоение</h3>
+  <pre class="cheat">for i = 1; i ≤ n; i *= 2
+→ i = 1,2,4,…,2^k ≤ n → k ≈ log₂ n → Θ(log n)</pre>
+  <p class="own"><em>Своими словами.</em> Каждый раз удваиваешь — быстро добегаешь до n; шагов мало, логарифм.</p>
+
+<h3>4. Два вложенных до n</h3>
+  <pre class="cheat">for i = 1…n:
+  for j = 1…n: …
+→ n·n = Θ(n²)</pre>
+
+<h3>5. Треугольник j=1…i или j=i…n</h3>
+  <pre class="cheat">for i = 1…n:
+  for j = 1…i: …
+→ Σᵢ i = n(n+1)/2 = Θ(n²)</pre>
+  <p>То же для j=i…n: снова треугольник, Θ(n²).</p>
+
+<h3>6. Снаружи n, внутри удвоение / деление</h3>
+  <pre class="cheat">for i = 1…n:
+  for j = n; j ≥ 1; j /= 2: …
+→ внешний n, внутренний ~ log n → Θ(n log n)</pre>
+  <pre class="cheat">for i = 1; i ≤ n; i *= 2:
+  for j = 1…n: …
+→ внешний log n, внутренний n → Θ(n log n)</pre>
+
+<h3>7. Внутри от i зависит логарифм</h3>
+  <pre class="cheat">for i = 1…n:
+  j = i
+  while j ≥ 1: j /= 2
+→ для каждого i около log i шагов → Σ log i = Θ(n log n)</pre>
+  <div class="ex"><strong>Пары (i,j) с 1≤i≤j≤n.</strong> Число пар = n(n+1)/2 = Θ(n²) — снова треугольник, даже без явного «for j».</div>
+</section>
+
+<section class="card" id="practice">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест как-читать-циклы</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Практика 1 — полный разбор с пояснениями</h2>
+
+  <h3>Задача 1. Упорядочить по росту</h3>
+  <p>Нужный порядок:</p>
+  <p class="cheat mono">log n &lt; (log n)² &lt; √n &lt; n &lt; n log n &lt; n¹·¹ &lt; n² &lt; 2ⁿ &lt; n!</p>
+  <p>Почему так: логарифм растёт медленнее любого положительного степенного; √n = n^{1/2} &lt; n; n log n = o(n¹·¹) потому что log n / n^{0.1} → 0; экспонента обгоняет любой полином; факториал обгоняет экспоненту (Стирлинг). Из списка почти никого не склеить в одну Θ-группу. Θ-эквивалентны были бы log₂ n и log₁₀ n — их здесь нет рядом.</p>
+
+<h3>Задача 2. Правда / ложь — почему</h3>
+  <ol>
+    <li>n² = O(n³) — <strong>да</strong>: n² ≤ 1·n³ при n ≥ 1.</li>
+    <li>n³ = O(n²) — <strong>нет</strong>: отношение → ∞.</li>
+    <li>3n²+10n+1 = Θ(n²) — <strong>да</strong> (см. разбор выше).</li>
+    <li>log₂ n = Θ(log₁₀ n) — <strong>да</strong>: log₂ n = log₁₀ n / log₁₀ 2.</li>
+    <li>2ⁿ = O(3ⁿ) — <strong>да</strong>: (2/3)ⁿ → 0, значит 2ⁿ ≤ 1·3ⁿ.</li>
+    <li>3ⁿ = O(2ⁿ) — <strong>нет</strong>.</li>
+    <li>n log n = O(n²) — <strong>да</strong>.</li>
+    <li>n² = O(n log n) — <strong>нет</strong>.</li>
+  </ol>
+
+<h3>Задача 3. Упростить до Θ</h3>
+  <ol>
+    <li>7n³+2n²+100 → доминирует n³ → <strong>Θ(n³)</strong></li>
+    <li>n² + n log n + 1000n → доминирует n² → <strong>Θ(n²)</strong></li>
+    <li>(n+1)² − n² = 2n+1 → <strong>Θ(n)</strong> (разность « соседних квадратов»)</li>
+    <li>Σᵢ₌₁ⁿ i = n(n+1)/2 → <strong>Θ(n²)</strong></li>
+    <li>Σᵢ₌₁ⁿ log i: сумма ≈ ∫ log x dx = n log n − n → <strong>Θ(n log n)</strong></li>
+  </ol>
+
+<h3>Задачи 4–7. Циклы</h3>
+  <p><strong>4.</strong> for 1..n → Θ(n); шаг 2 → Θ(n); i*=2 → Θ(log n). (См. раздел «Циклы».)</p>
+  <p><strong>5.</strong> n×n → Θ(n²); j=1..i → Θ(n²); внешний n + внутренний *=2 → Θ(n log n); внешний *=2 + внутренний n → Θ(n log n).</p>
+  <p><strong>6.</strong> для каждого i цикл j/=2 даёт ~ log i → Σ log i = Θ(n log n).</p>
+  <p><strong>7.</strong> пары 1≤i≤j≤n: n(n+1)/2 = Θ(n²).</p>
+
+<h3>Задачи 8–13. Рекурсии — по шагам</h3>
+  <table>
+    <tr><th>T(n)</th><th>a,b,c</th><th>q</th><th>Случай</th><th>Ответ</th></tr>
+    <tr><td>T(n/2)+1</td><td>1,2,0</td><td>1</td><td>q=1</td><td>Θ(log n)</td></tr>
+    <tr><td>2T(n/2)+1</td><td>2,2,0</td><td>2</td><td>q&gt;1</td><td>Θ(n^{log₂ 2})=Θ(n)</td></tr>
+    <tr><td>2T(n/2)+n</td><td>2,2,1</td><td>1</td><td>q=1</td><td>Θ(n log n)</td></tr>
+    <tr><td>4T(n/2)+n</td><td>4,2,1</td><td>2</td><td>q&gt;1</td><td>Θ(n²)</td></tr>
+    <tr><td>3T(n/2)+O(n)</td><td>3,2,1</td><td>1.5</td><td>q&gt;1</td><td>Θ(n^{log₂ 3})</td></tr>
+    <tr><td>2T(n/2)+n²</td><td>2,2,2</td><td>½</td><td>q&lt;1</td><td>Θ(n²)</td></tr>
+  </table>
+  <p class="own"><em>Своими словами.</em> Выпиши a,b,c → посчитай q → открой нужную строку таблицы случаев. Не угадывай.</p>
+
+<h3>Задачи 14–16. Умножение и Карацуба</h3>
+  <p><strong>14.</strong> Столбик: ~ n² одноразрядных умножений → Θ(n²).</p>
+  <p><strong>15.</strong> (a+b)(c+d)=ac+ad+bc+bd ⇒ ad+bc=(a+b)(c+d)−ac−bd. Три произведения: ac, bd, (a+b)(c+d). Это и есть трюк Карацубы.</p>
+  <p><strong>16.</strong> Не всегда гонять Карацубу на маленьких n: константы и накладные расходы рекурсии съедают выигрыш. Асимптотика — про большие входы.</p>
+
+<h3>Задачи 17–19. Смысл</h3>
+  <p><strong>17.</strong> Линейный поиск в 10⁶ элементов: до 10⁶ сравнений. Бинарный (массив отсортирован): ~ log₂(10⁶) ≈ 20. Без сортировки «середина» не говорит, где искать — бинарный поиск требует порядка.</p>
+  <p><strong>18.</strong> A(n)=1000n и B(n)=2n log n. Асимптотически A лучше (линейный против n log n). Но при малых n константа 1000 может проигрывать — смотри crossover, где графики пересекаются.</p>
+  <p><strong>19.</strong></p>
+  <ol>
+    <li>ложь — O не значит «обязательно медленнее в жизни»; плюс константы.</li>
+    <li>истина.</li>
+    <li>ложь — два прохода по массиву всё ещё O(n).</li>
+    <li>истина — Θ симметрична.</li>
+    <li>ложь — O не симметрична.</li>
+    <li>ложь — O(1) = «константа», не обязательно одна операция.</li>
+  </ol>
+</section>
+
+
+
+<section class="card" id="lec2-intro">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест практика-1</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Лекция 2 · структуры данных</h2>
+  <p>Полный разбор по конспекту Пальченкова (<span class="mono">lectures-1-2-styled.pdf</span>) и листку на семинар (<span class="mono">lecture2-problems-30.pdf</span>). Параллельный Markdown без сжатия: <span class="mono">лекция-2-структуры-данных.md</span>.</p>
+  <p class="own"><em>Своими словами.</em> Лекция 1 учила <em>считать</em> время. Лекция 2 — какие структуры дают операции дёшево и какие приёмы (префиксы, два указателя, стек/дек) решают задачи на массивах. Ниже — определения, примеры и все 30 задач с разбором, не «шпаргалка в одну строку».</p>
+</section>
+
+<section class="card" id="ub">
+
+<h2>Чтобы код структур запускался</h2>
+  <div class="def"><strong>Неопределённое поведение (UB).</strong> Язык C++ ничего не обещает: падение, тихий неверный ответ, разное поведение на разных машинах.</div>
+  <p>Частые источники: нет <span class="mono">return</span>; неинициализированная переменная; выход за границу массива/вектора; испорченный итератор.</p>
+  <p class="own"><em>Своими словами.</em> Компилятор не обязан «поймать ошибку». Иногда UB выглядит как «случайно работает», пока не сменишь флаги оптимизации.</p>
+  <div class="ex"><strong>Пример.</strong> <span class="mono">int a[4]</span> — индексы только 0…3. Запись <span class="mono">a[4]=7</span> уже UB.<br>
+  Предупреждения: <span class="mono">-Wall -Wextra -Wshadow</span>. Для libstdc++ до заголовков: <span class="mono">#define _GLIBCXX_DEBUG</span>.</div>
+  <div class="ex"><strong>Указатели.</strong> <span class="mono">*p</span> — значение по адресу, <span class="mono">&amp;x</span> — адрес, <span class="mono">p-&gt;x</span> = <span class="mono">(*p).x</span>. Имя массива → указатель на нулевой элемент.<br>
+  <span class="mono">int value=3; int* ptr=&amp;value; *ptr=7;</span> → value стало 7.</div>
+</section>
+
+<section class="card" id="machine">
+
+<h2>Что дорого, хотя в Θ не видно</h2>
+  <p>Асимптотика считает шаг единицей; на машине единицы разные.</p>
+  <ol>
+    <li>посимвольный ввод/вывод ≪ чтение буфером;</li>
+    <li>√, sin, atan — не одна «железная» команда;</li>
+    <li>деление/остаток дороже сложения и сдвига;</li>
+    <li>последовательный <span class="mono">a[i]</span> дружит с кешем; случайный <span class="mono">a[p[i]]</span> — нет;</li>
+    <li><span class="mono">new</span>/<span class="mono">delete</span> → аллокатор;</li>
+    <li>глубокая рекурсия → Θ(n) кадров стека.</li>
+  </ol>
+  <p class="own"><em>Своими словами.</em> Два алгоритма с одним Θ(n²) ведут себя по-разному, если один держит таблицу n×n в RAM, а другой — массив длины n в кеше.</p>
+  <div class="ex"><strong>Пример.</strong> Θ(2ⁿ) времени и Θ(2ⁿ) памяти при n≈40 часто убивается памятью раньше времени. Плотный массив обычно быстрее россыпи мелких объектов.</div>
+
+<h3>Память слоями (как на лекции — «кубики» с границами)</h3>
+  <p>Диск — самый большой и самый медленный. Оперативная память — гигабайты. Кеш последнего уровня — единицы мегабайт. Ближний кеш ядра — десятки килобайт. На картинке снизу вверх: <strong>больше и медленнее → меньше и быстрее</strong>. Границы слоёв — жёсткие: данные «живут» в одном кубике, пока их не перенесли ближе к процессору.</p>
+  <div class="fig">
+<svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Иерархия памяти кубиками">
+  <!-- подписи осей -->
+  <text x="20" y="28" font-size="13" fill="#8a4b1f" font-weight="600">быстрее ↑</text>
+  <text x="20" y="48" font-size="12" fill="#6b665c">меньше</text>
+  <text x="430" y="320" font-size="13" fill="#8a4b1f" font-weight="600">больше →</text>
+  <text x="430" y="338" font-size="12" fill="#6b665c">медленнее</text>
+
+  <!-- слой: диск (самый широкий) — ряд кубиков -->
+  <g id="disk">
+    <rect x="40" y="250" width="48" height="48" fill="#c4b8a8" stroke="#1c1b19" stroke-width="2"/>
+    <rect x="90" y="250" width="48" height="48" fill="#c4b8a8" stroke="#1c1b19" stroke-width="2"/>
+    <rect x="140" y="250" width="48" height="48" fill="#c4b8a8" stroke="#1c1b19" stroke-width="2"/>
+    <rect x="190" y="250" width="48" height="48" fill="#c4b8a8" stroke="#1c1b19" stroke-width="2"/>
+    <rect x="240" y="250" width="48" height="48" fill="#c4b8a8" stroke="#1c1b19" stroke-width="2"/>
+    <rect x="290" y="250" width="48" height="48" fill="#c4b8a8" stroke="#1c1b19" stroke-width="2"/>
+    <rect x="340" y="250" width="48" height="48" fill="#c4b8a8" stroke="#1c1b19" stroke-width="2"/>
+    <rect x="390" y="250" width="48" height="48" fill="#c4b8a8" stroke="#1c1b19" stroke-width="2"/>
+    <!-- изометрия «верхушки» кубиков -->
+    <polygon points="40,250 52,238 100,238 88,250" fill="#d9d0c4" stroke="#1c1b19" stroke-width="1.5"/>
+    <polygon points="88,250 100,238 150,238 138,250" fill="#d9d0c4" stroke="#1c1b19" stroke-width="1.5"/>
+    <polygon points="138,250 150,238 200,238 188,250" fill="#d9d0c4" stroke="#1c1b19" stroke-width="1.5"/>
+    <polygon points="188,250 200,238 250,238 238,250" fill="#d9d0c4" stroke="#1c1b19" stroke-width="1.5"/>
+    <polygon points="238,250 250,238 300,238 288,250" fill="#d9d0c4" stroke="#1c1b19" stroke-width="1.5"/>
+    <polygon points="288,250 300,238 350,238 338,250" fill="#d9d0c4" stroke="#1c1b19" stroke-width="1.5"/>
+    <polygon points="338,250 350,238 400,238 388,250" fill="#d9d0c4" stroke="#1c1b19" stroke-width="1.5"/>
+    <polygon points="388,250 400,238 450,238 438,250" fill="#d9d0c4" stroke="#1c1b19" stroke-width="1.5"/>
+    <text x="240" y="320" text-anchor="middle" font-size="14" font-weight="600">Диск · очень много · очень медленно</text>
+  </g>
+
+  <!-- слой: RAM -->
+  <g id="ram">
+    <rect x="90" y="175" width="44" height="44" fill="#a8c4bc" stroke="#1f5c4d" stroke-width="2"/>
+    <rect x="136" y="175" width="44" height="44" fill="#a8c4bc" stroke="#1f5c4d" stroke-width="2"/>
+    <rect x="182" y="175" width="44" height="44" fill="#a8c4bc" stroke="#1f5c4d" stroke-width="2"/>
+    <rect x="228" y="175" width="44" height="44" fill="#a8c4bc" stroke="#1f5c4d" stroke-width="2"/>
+    <rect x="274" y="175" width="44" height="44" fill="#a8c4bc" stroke="#1f5c4d" stroke-width="2"/>
+    <rect x="320" y="175" width="44" height="44" fill="#a8c4bc" stroke="#1f5c4d" stroke-width="2"/>
+    <polygon points="90,175 102,163 146,163 134,175" fill="#c5ddd6" stroke="#1f5c4d" stroke-width="1.5"/>
+    <polygon points="134,175 146,163 190,163 178,175" fill="#c5ddd6" stroke="#1f5c4d" stroke-width="1.5"/>
+    <polygon points="178,175 190,163 234,163 222,175" fill="#c5ddd6" stroke="#1f5c4d" stroke-width="1.5"/>
+    <polygon points="222,175 234,163 278,163 266,175" fill="#c5ddd6" stroke="#1f5c4d" stroke-width="1.5"/>
+    <polygon points="266,175 278,163 322,163 310,175" fill="#c5ddd6" stroke="#1f5c4d" stroke-width="1.5"/>
+    <polygon points="310,175 322,163 366,163 354,175" fill="#c5ddd6" stroke="#1f5c4d" stroke-width="1.5"/>
+    <text x="230" y="168" text-anchor="middle" font-size="13" font-weight="600" fill="#1f5c4d">ОЗУ (RAM) · гигабайты</text>
+  </g>
+
+  <!-- слой: L3 -->
+  <g id="l3">
+    <rect x="150" y="110" width="40" height="40" fill="#7a9e94" stroke="#1f5c4d" stroke-width="2"/>
+    <rect x="192" y="110" width="40" height="40" fill="#7a9e94" stroke="#1f5c4d" stroke-width="2"/>
+    <rect x="234" y="110" width="40" height="40" fill="#7a9e94" stroke="#1f5c4d" stroke-width="2"/>
+    <rect x="276" y="110" width="40" height="40" fill="#7a9e94" stroke="#1f5c4d" stroke-width="2"/>
+    <polygon points="150,110 160,100 200,100 190,110" fill="#9bb8af" stroke="#1f5c4d" stroke-width="1.5"/>
+    <polygon points="190,110 200,100 240,100 230,110" fill="#9bb8af" stroke="#1f5c4d" stroke-width="1.5"/>
+    <polygon points="230,110 240,100 280,100 270,110" fill="#9bb8af" stroke="#1f5c4d" stroke-width="1.5"/>
+    <polygon points="270,110 280,100 320,100 310,110" fill="#9bb8af" stroke="#1f5c4d" stroke-width="1.5"/>
+    <text x="230" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#1f5c4d">кеш последнего уровня · МБ</text>
+  </g>
+
+  <!-- слой: L1 ближний -->
+  <g id="l1">
+    <rect x="200" y="48" width="36" height="36" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+    <rect x="238" y="48" width="36" height="36" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+    <polygon points="200,48 210,38 246,38 236,48" fill="#3a7a68" stroke="#0d3d32" stroke-width="1.5"/>
+    <polygon points="236,48 246,38 282,38 272,48" fill="#3a7a68" stroke="#0d3d32" stroke-width="1.5"/>
+    <text x="237" y="32" text-anchor="middle" font-size="12" font-weight="600" fill="#1f5c4d">ближний кеш · десятки КБ</text>
+    <text x="237" y="22" text-anchor="middle" font-size="11" fill="#8a4b1f">≈ ядро / CPU</text>
+  </g>
+
+  <!-- стрелка переноса данных -->
+  <path d="M480 280 L480 70" fill="none" stroke="#8a4b1f" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#8a4b1f"/>
+    </marker>
+  </defs>
+  <text x="492" y="180" font-size="11" fill="#8a4b1f">данные</text>
+  <text x="492" y="195" font-size="11" fill="#8a4b1f">подтягивают</text>
+  <text x="492" y="210" font-size="11" fill="#8a4b1f">ближе</text>
+</svg>
+  <div class="caption">Слои памяти как кубики с границами: чем выше — тем меньше объём и тем быстрее доступ.</div>
+  </div>
+
+  <p><strong>Зачем кубики.</strong> Последовательный проход <span class="mono">a[i]</span> читает соседние ячейки — они часто лежат в одном «кубике» кеш-линии: одна загрузка обслуживает несколько итераций. Случайный <span class="mono">a[p[i]]</span> прыгает по разным кубикам — кеш не помогает.</p>
+  <div class="fig">
+<svg viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Кеш-линия из кубиков-ячеек">
+  <text x="20" y="24" font-size="13" font-weight="600">кубики ячеек в одной кеш-линии</text>
+  <!-- одна линия: 8 кубиков -->
+  <rect x="40" y="45" width="40" height="40" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <rect x="80" y="45" width="40" height="40" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <rect x="120" y="45" width="40" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="160" y="45" width="40" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="200" y="45" width="40" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="240" y="45" width="40" height="40" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <rect x="280" y="45" width="40" height="40" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <rect x="320" y="45" width="40" height="40" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <text x="140" y="70" text-anchor="middle" fill="#fff" font-size="12">a[i]</text>
+  <text x="180" y="70" text-anchor="middle" fill="#fff" font-size="12">i+1</text>
+  <text x="220" y="70" text-anchor="middle" fill="#fff" font-size="12">i+2</text>
+  <text x="40" y="105" font-size="12" fill="#6b665c">загрузили линию целиком → соседи «бесплатно»</text>
+
+  <!-- случайный доступ -->
+  <text x="20" y="130" font-size="13">случайный a[p[i]]: каждый прыжок — другой кубик / другая линия</text>
+</svg>
+  <div class="caption">Плотный массив обходит кубики подряд; разрозненные объекты — прыжками.</div>
+  </div>
+</section>
+
+<section class="card" id="prefix">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест что-дорого-хотя-в-θ-не-видно</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Префиксные суммы</h2>
+  <p><strong>Задача.</strong> Много раз считать сумму на [l, r]. Наивно — Θ(r−l+1) на запрос → при n запросах легко Θ(n²).</p>
+  <div class="def"><span class="mono">sum[0]=0</span>, <span class="mono">sum[i+1]=sum[i]+a[i]</span>.<br>
+  Сумма a[l]+…+a[r] = <strong>sum[r+1] − sum[l]</strong> за Θ(1) после предобработки Θ(n).</div>
+  <p class="own"><em>Своими словами.</em> sum[k] — сумма первых k элементов. Отрезок [l, r] = «первые r+1» минус «первые l».</p>
+  <div class="ex"><strong>Пример.</strong> a=[3,1,4,1] → sum=[0,3,4,8,9]. Сумма индексов 1…2: 1+4=5 = sum[3]−sum[1]=8−3. ✓<br>
+  Весь массив: sum[n]. Один элемент a[i]: sum[i+1]−sum[i].</div>
+
+  <div class="fig">
+<svg viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Префиксные суммы кубиками">
+  <text x="20" y="22" font-size="13" font-weight="600">массив a — кубики значений</text>
+  <!-- a: 3,1,4,1 -->
+  <rect x="40" y="40" width="50" height="50" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <rect x="95" y="40" width="50" height="50" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="150" y="40" width="50" height="50" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="205" y="40" width="50" height="50" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <text x="65" y="70" text-anchor="middle" font-size="16" font-weight="700">3</text>
+  <text x="120" y="70" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">1</text>
+  <text x="175" y="70" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">4</text>
+  <text x="230" y="70" text-anchor="middle" font-size="16" font-weight="700">1</text>
+  <text x="65" y="105" text-anchor="middle" font-size="11" fill="#6b665c">0</text>
+  <text x="120" y="105" text-anchor="middle" font-size="11" fill="#6b665c">1</text>
+  <text x="175" y="105" text-anchor="middle" font-size="11" fill="#6b665c">2</text>
+  <text x="230" y="105" text-anchor="middle" font-size="11" fill="#6b665c">3</text>
+  <text x="280" y="60" font-size="13" fill="#1f5c4d">отрезок [1,2]</text>
+  <text x="280" y="78" font-size="12" fill="#6b665c">зелёные кубики</text>
+
+  <text x="20" y="130" font-size="13" font-weight="600">префиксы sum — кубики «накоплено слева»</text>
+  <rect x="40" y="145" width="50" height="45" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="95" y="145" width="50" height="45" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="150" y="145" width="50" height="45" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2.5"/>
+  <rect x="205" y="145" width="50" height="45" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2.5"/>
+  <rect x="260" y="145" width="50" height="45" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="65" y="173" text-anchor="middle" font-size="14">0</text>
+  <text x="120" y="173" text-anchor="middle" font-size="14">3</text>
+  <text x="175" y="173" text-anchor="middle" font-size="14" font-weight="700">4</text>
+  <text x="230" y="173" text-anchor="middle" font-size="14" font-weight="700">8</text>
+  <text x="285" y="173" text-anchor="middle" font-size="14">9</text>
+  <text x="65" y="205" text-anchor="middle" font-size="11" fill="#6b665c">sum0</text>
+  <text x="120" y="205" text-anchor="middle" font-size="11" fill="#6b665c">sum1</text>
+  <text x="175" y="205" text-anchor="middle" font-size="11" fill="#6b665c">sum2=l</text>
+  <text x="230" y="205" text-anchor="middle" font-size="11" fill="#6b665c">sum3=r+1</text>
+  <text x="285" y="205" text-anchor="middle" font-size="11" fill="#6b665c">sum4</text>
+  <text x="340" y="165" font-size="13">8 − 3 = 5</text>
+  <text x="340" y="183" font-size="12" fill="#6b665c">sum[r+1]−sum[l]</text>
+</svg>
+  <div class="caption">Оранжевые sum-кубики: граница отрезка. Разница двух префиксов = сумма зелёных ячеек a.</div>
+  </div>
+  <p><strong>Когда ломается.</strong> Присваивание a[i]=x портит все префиксы правее i. Если обновления и запросы чередуются — одного префикса мало (см. разности и задачу 30).</p>
+</section>
+
+<section class="card" id="diff">
+
+<h2>Разностный массив</h2>
+  <p><strong>Задача.</strong> Нули длины n; q запросов «прибавить x на [l, r]»; хочется O(n+q), не O(n·q).</p>
+  <div class="def">На запрос: <span class="mono">d[l]+=x</span>; если r+1 &lt; n, то <span class="mono">d[r+1]−=x</span>. Итоговый a — префиксные суммы d.</div>
+  <p class="own"><em>Своими словами.</em> В l «включаем» +x, в r+1 «выключаем». Префикс размазывает прибавку по отрезку.</p>
+  <div class="ex"><strong>Пример.</strong> n=5, «+5 на [1,3]».<br>
+  d=[0,+5,0,0,−5] → a=[0,5,5,5,0]. ✓</div>
+
+  <div class="fig">
+<svg viewBox="0 0 540 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Разностный массив кубиками">
+  <text x="20" y="22" font-size="13" font-weight="600">d: «включи +5» и «выключи −5»</text>
+  <rect x="40" y="40" width="55" height="50" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="100" y="40" width="55" height="50" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="160" y="40" width="55" height="50" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="220" y="40" width="55" height="50" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="280" y="40" width="55" height="50" fill="#8a4b1f" stroke="#5c3010" stroke-width="2"/>
+  <text x="67" y="70" text-anchor="middle" font-size="14">0</text>
+  <text x="127" y="70" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">+5</text>
+  <text x="187" y="70" text-anchor="middle" font-size="14">0</text>
+  <text x="247" y="70" text-anchor="middle" font-size="14">0</text>
+  <text x="307" y="70" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">−5</text>
+  <text x="67" y="105" text-anchor="middle" font-size="11" fill="#6b665c">0</text>
+  <text x="127" y="105" text-anchor="middle" font-size="11" fill="#6b665c">l=1</text>
+  <text x="187" y="105" text-anchor="middle" font-size="11" fill="#6b665c">2</text>
+  <text x="247" y="105" text-anchor="middle" font-size="11" fill="#6b665c">3</text>
+  <text x="307" y="105" text-anchor="middle" font-size="11" fill="#6b665c">r+1=4</text>
+  <path d="M127 95 L127 115 L307 115 L307 95" fill="none" stroke="#8a4b1f" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <text x="360" y="70" font-size="12" fill="#6b665c">границы отрезка</text>
+
+  <text x="20" y="135" font-size="13" font-weight="600">a = префикс d (размазали по кубикам)</text>
+  <rect x="40" y="150" width="55" height="45" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="100" y="150" width="55" height="45" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="160" y="150" width="55" height="45" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="220" y="150" width="55" height="45" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="280" y="150" width="55" height="45" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="67" y="178" text-anchor="middle" font-size="14">0</text>
+  <text x="127" y="178" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">5</text>
+  <text x="187" y="178" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">5</text>
+  <text x="247" y="178" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">5</text>
+  <text x="307" y="178" text-anchor="middle" font-size="14">0</text>
+</svg>
+  <div class="caption">Два кубика-события в d → целый отрезок зелёных кубиков в a.</div>
+  </div>
+  <div class="ex"><strong>Не-пример ожидания.</strong> Две ячейки d не дают «сумму на [L,R]» — d хранит изменения относительно соседа (задача 30).</div>
+</section>
+
+<section class="card" id="structs">
+
+<h2>Массив, списки, вектор</h2>
+  <h3>Массив</h3>
+
+  <div class="fig">
+<svg viewBox="0 0 540 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Массив список вектор кубиками">
+  <text x="20" y="22" font-size="13" font-weight="600">массив — кубики подряд, индекс = адрес</text>
+  <rect x="40" y="35" width="44" height="44" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="84" y="35" width="44" height="44" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="128" y="35" width="44" height="44" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="172" y="35" width="44" height="44" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="62" y="62" text-anchor="middle" font-size="13">a0</text>
+  <text x="106" y="62" text-anchor="middle" font-size="13">a1</text>
+  <text x="150" y="62" text-anchor="middle" font-size="13">a2</text>
+  <text x="194" y="62" text-anchor="middle" font-size="13">a3</text>
+  <text x="240" y="55" font-size="12" fill="#6b665c">доступ a[2] — сразу к кубику</text>
+
+  <text x="20" y="110" font-size="13" font-weight="600">двусвязный список — кубики-узлы + стрелки</text>
+  <rect x="40" y="125" width="70" height="40" rx="4" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <text x="75" y="150" text-anchor="middle" font-size="12">head∅</text>
+  <rect x="140" y="125" width="70" height="40" rx="4" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="175" y="150" text-anchor="middle" font-size="12">7</text>
+  <rect x="240" y="125" width="70" height="40" rx="4" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="275" y="150" text-anchor="middle" font-size="12">2</text>
+  <rect x="340" y="125" width="70" height="40" rx="4" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <text x="375" y="150" text-anchor="middle" font-size="12">tail∅</text>
+  <path d="M110 145 L140 145" stroke="#1c1b19" stroke-width="2" marker-end="url(#a1)"/>
+  <path d="M210 145 L240 145" stroke="#1c1b19" stroke-width="2" marker-end="url(#a1)"/>
+  <path d="M310 145 L340 145" stroke="#1c1b19" stroke-width="2" marker-end="url(#a1)"/>
+  <path d="M140 155 L110 155" stroke="#6b665c" stroke-width="1.5" marker-end="url(#a2)"/>
+  <path d="M240 155 L210 155" stroke="#6b665c" stroke-width="1.5" marker-end="url(#a2)"/>
+  <path d="M340 155 L310 155" stroke="#6b665c" stroke-width="1.5" marker-end="url(#a2)"/>
+  <defs>
+    <marker id="a1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#1c1b19"/></marker>
+    <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6b665c"/></marker>
+  </defs>
+  <text x="40" y="185" font-size="11" fill="#6b665c">фиктивные кубики по краям — всегда есть сосед</text>
+
+  <text x="20" y="215" font-size="13" font-weight="600">вектор: живые кубики + запас (cap)</text>
+  <rect x="40" y="230" width="36" height="36" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="76" y="230" width="36" height="36" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="112" y="230" width="36" height="36" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="148" y="230" width="36" height="36" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2" stroke-dasharray="4 2"/>
+  <rect x="184" y="230" width="36" height="36" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2" stroke-dasharray="4 2"/>
+  <rect x="220" y="230" width="36" height="36" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2" stroke-dasharray="4 2"/>
+  <text x="58" y="253" text-anchor="middle" fill="#fff" font-size="12">1</text>
+  <text x="94" y="253" text-anchor="middle" fill="#fff" font-size="12">2</text>
+  <text x="130" y="253" text-anchor="middle" fill="#fff" font-size="12">3</text>
+  <text x="280" y="245" font-size="12">n=3 · cap=6</text>
+  <text x="280" y="262" font-size="11" fill="#6b665c">пунктир — пустой запас</text>
+</svg>
+  <div class="caption">Массив = ряд кубиков. Список = кубики со стрелками. Вектор = живые + запасные кубики.</div>
+  </div>
+  <p>Чтение/запись по индексу Θ(1). Поиск значения Θ(n). Удаление с конца (если длина хранится) Θ(1); с начала — Θ(n) из‑за сдвига.</p>
+
+<h3>Двусвязный список</h3>
+  <div class="def">Узел: prev, next, значение. Фиктивные head и tail: живые элементы строго между ними. Пустой список: head→tail и tail→head.</div>
+  <p>Оба конца и erase по известному указателю — Θ(1). Доступ по индексу — Θ(i). Фиктивные узлы убирают ветки «удаляем первый/последний».</p>
+  <div class="ex"><strong>Задача 6.</strong> В пустом списке <span class="mono">head.next</span> указывает на <strong>tail</strong>.</div>
+
+<h3>Односвязный (только head)</h3>
+  <p>push_front Θ(1). push_back без хвоста Θ(n). Удаление середины по указателю на узел за Θ(1) невозможно — нет prev.</p>
+  <div class="ex"><strong>Задача 4.</strong> push_front Θ(1); push_back Θ(n).</div>
+
+<h3>Список индексами</h3>
+  <p>next — номер ячейки в <span class="mono">vector</span>. Плотнее по кешу, чем россыпь <span class="mono">new</span>. Свободные индексы — стек дырок.</p>
+
+<h3>Вектор</h3>
+  <div class="def">Буфер + n + cap. При переполнении ёмкость ×2, копируем живые. n успешных push_back суммарно Θ(n) → амортизированно Θ(1). Рост cap на +1 каждый раз → Θ(n²).</div>
+  <p>Нельзя стартовать с cap=0 и удваивать: 0·2=0. Первая ёмкость — 1.</p>
+  <div class="ex"><strong>Задача 5.</strong> Заняты 8 ячеек, удвоение → копируется <strong>8</strong> старых элементов.</div>
+</section>
+
+<section class="card" id="stack-q">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест массив-списки-вектор</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Стек, очередь, дек, кольцо</h2>
+  <table>
+    <tr><th>Абстракция</th><th>Смысл</th></tr>
+    <tr><td>стек</td><td>LIFO — последний пришёл, первый ушёл</td></tr>
+    <tr><td>очередь</td><td>FIFO — первый пришёл, первый ушёл</td></tr>
+    <tr><td>дек</td><td>операции на обоих концах</td></tr>
+  </table>
+  <div class="ex"><strong>Задача 3.</strong> push 3,8,1; первый pop → <strong>3</strong>.</div>
+
+  <div class="fig">
+<svg viewBox="0 0 540 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Стек очередь кольцо кубиками">
+  <text x="30" y="22" font-size="13" font-weight="600">стек (снизу вверх)</text>
+  <rect x="50" y="130" width="50" height="40" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="50" y="90" width="50" height="40" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="50" y="50" width="50" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <text x="75" y="155" text-anchor="middle" font-size="14">3</text>
+  <text x="75" y="115" text-anchor="middle" font-size="14">8</text>
+  <text x="75" y="75" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">1</text>
+  <text x="110" y="70" font-size="12" fill="#8a4b1f">← top / pop</text>
+
+  <text x="200" y="22" font-size="13" font-weight="600">очередь (слева направо)</text>
+  <rect x="200" y="80" width="50" height="45" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="255" y="80" width="50" height="45" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="310" y="80" width="50" height="45" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="225" y="108" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">3</text>
+  <text x="280" y="108" text-anchor="middle" font-size="14">8</text>
+  <text x="335" y="108" text-anchor="middle" font-size="14">1</text>
+  <text x="200" y="145" font-size="12" fill="#8a4b1f">pop ←</text>
+  <text x="330" y="145" font-size="12" fill="#8a4b1f">→ push</text>
+
+  <text x="400" y="22" font-size="13" font-weight="600">кольцо sz=9</text>
+  <!-- упрощённо ряд с подсветкой 6,7,8,0 -->
+  <rect x="400" y="50" width="28" height="28" fill="#1f5c4d" stroke="#0d3d32" stroke-width="1.5"/>
+  <rect x="430" y="50" width="28" height="28" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="1.5"/>
+  <rect x="460" y="50" width="28" height="28" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="1.5"/>
+  <rect x="490" y="50" width="28" height="28" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="1.5"/>
+  <text x="414" y="68" text-anchor="middle" fill="#fff" font-size="10">0</text>
+  <text x="444" y="68" text-anchor="middle" font-size="10">1</text>
+  <text x="474" y="68" text-anchor="middle" font-size="10">…</text>
+  <text x="504" y="68" text-anchor="middle" font-size="10">5</text>
+  <rect x="400" y="90" width="28" height="28" fill="#1f5c4d" stroke="#0d3d32" stroke-width="1.5"/>
+  <rect x="430" y="90" width="28" height="28" fill="#1f5c4d" stroke="#0d3d32" stroke-width="1.5"/>
+  <rect x="460" y="90" width="28" height="28" fill="#1f5c4d" stroke="#0d3d32" stroke-width="1.5"/>
+  <rect x="490" y="90" width="28" height="28" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="1.5"/>
+  <text x="414" y="108" text-anchor="middle" fill="#fff" font-size="10">6</text>
+  <text x="444" y="108" text-anchor="middle" fill="#fff" font-size="10">7</text>
+  <text x="474" y="108" text-anchor="middle" fill="#fff" font-size="10">8</text>
+  <text x="504" y="108" text-anchor="middle" font-size="10">…</text>
+  <text x="400" y="140" font-size="11" fill="#6b665c">start=6 … end=1</text>
+  <text x="400" y="156" font-size="11" fill="#6b665c">4 зелёных кубика</text>
+</svg>
+  <div class="caption">Стек — столбик кубиков. Очередь — очередь кубиков. Кольцо — занятые кубики с переходом через край.</div>
+  </div>
+  <div class="def"><strong>Кольцевой буфер.</strong> Длина sz; данные на полуинтервале [start, end) по кольцу. Число элементов: (end−start+sz) mod sz. Картина start=end бывает и у пустого, и у полного — нужен счётчик или свободная ячейка. При удвоении копировать в логическом порядке со start.</div>
+  <div class="ex"><strong>Задача 7.</strong> sz=9, start=6, end=1 → заняты 6,7,8,0 → <strong>4</strong> (1−6+9=4).</div>
+</section>
+
+<section class="card" id="min-stack">
+
+<h2>Стек и очередь с минимумом; окно</h2>
+  <h3>Стек с минимумом</h3>
+  <div class="def">Два стека: data и mins (минимум на префиксе от дна до вершины). push кладёт в оба; pop снимает оба; get_min — вершина mins, Θ(1). Если минимум дважды — две копии в mins.</div>
+  <div class="ex"><strong>Задача 2.</strong> Кладут 6,4,5 → data=[6,4,5], mins=[6,4,4]. Вершина минимумов = <strong>4</strong>.</div>
+
+  <div class="fig">
+<svg viewBox="0 0 540 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Стек минимумов и окно кубиками">
+  <text x="20" y="22" font-size="13" font-weight="600">после push 6, 4, 5 — два столбика кубиков</text>
+  <text x="60" y="48" font-size="12" fill="#6b665c">data</text>
+  <text x="160" y="48" font-size="12" fill="#6b665c">mins</text>
+  <rect x="40" y="160" width="50" height="40" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="40" y="120" width="50" height="40" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="40" y="80" width="50" height="40" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="65" y="185" text-anchor="middle" font-size="14">6</text>
+  <text x="65" y="145" text-anchor="middle" font-size="14">4</text>
+  <text x="65" y="105" text-anchor="middle" font-size="14">5</text>
+  <rect x="140" y="160" width="50" height="40" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <rect x="140" y="120" width="50" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="140" y="80" width="50" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <text x="165" y="185" text-anchor="middle" font-size="14">6</text>
+  <text x="165" y="145" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4</text>
+  <text x="165" y="105" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4</text>
+  <text x="210" y="100" font-size="12" fill="#8a4b1f">← get_min = 4</text>
+  <text x="40" y="220" font-size="11" fill="#6b665c">две копии 4: иначе pop 5 стёр бы минимум</text>
+
+  <text x="300" y="48" font-size="13" font-weight="600">окно k=3 на массиве</text>
+  <rect x="300" y="70" width="40" height="40" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <rect x="340" y="70" width="40" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="380" y="70" width="40" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="420" y="70" width="40" height="40" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="460" y="70" width="40" height="40" fill="#fff4e5" stroke="#8a4b1f" stroke-width="2"/>
+  <text x="320" y="95" text-anchor="middle" font-size="13">2</text>
+  <text x="360" y="95" text-anchor="middle" fill="#fff" font-size="13">5</text>
+  <text x="400" y="95" text-anchor="middle" fill="#fff" font-size="13">1</text>
+  <text x="440" y="95" text-anchor="middle" fill="#fff" font-size="13">4</text>
+  <text x="480" y="95" text-anchor="middle" font-size="13">3</text>
+  <text x="300" y="130" font-size="12" fill="#1f5c4d">зелёное окно · min=1</text>
+  <text x="300" y="155" font-size="12" font-weight="600">дек кандидатов (индексы)</text>
+  <rect x="300" y="165" width="50" height="36" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="355" y="165" width="50" height="36" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <text x="325" y="188" text-anchor="middle" fill="#fff" font-size="12">i:1</text>
+  <text x="380" y="188" text-anchor="middle" font-size="12">i:4?</text>
+  <text x="300" y="218" font-size="11" fill="#6b665c">голова дека = минимум окна</text>
+</svg>
+  <div class="caption">Стек минимумов — два столбика кубиков. Окно — подсветка кубиков массива + дек кандидатов.</div>
+  </div>
+
+<h3>Очередь с минимумом</h3>
+  <p>Два стека с min: b — хвост (push), a — голова (pop). Если a пуст — перелить b→a. min очереди = min вершин a и b. Каждый элемент в b один раз и в a ≤ одного раза → серия m операций суммарно Θ(m).</p>
+  <p class="own"><em>Своими словами.</em> Одна переменная «текущий минимум» после pop этого элемента не знает нового ответа — поэтому нужен стек префиксных минимумов.</p>
+
+<h3>Минимум скользящего окна</h3>
+  <div class="def">Дек индексов: значения возрастают от головы к хвосту; голова — минимум. Новый элемент выкидывает с хвоста всех ≥ него. С головы снимают индексы вне окна. Каждый индекс входит/выходит ≤1 раза → Θ(n) на n окон.</div>
+</section>
+
+<section class="card" id="seminar-easy">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест стек-и-очередь-с-минимумом-о</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Семинар · простые 1–7</h2>
+  <h3>1. Префикс</h3>
+  <p>Сумма a[l]…a[r] = <strong>sum[r+1] − sum[l]</strong>.</p>
+
+<h3>2. Вершина минимумов</h3>
+  <p>После 6,4,5 вершина mins = <strong>4</strong>.</p>
+
+<h3>3. Кто выйдет первым</h3>
+  <p>Очередь 3,8,1 → первый pop = <strong>3</strong>.</p>
+
+<h3>4. Один указатель на голову</h3>
+  <p>push_front <strong>Θ(1)</strong>; push_back <strong>Θ(n)</strong>.</p>
+
+<h3>5. Одно удвоение</h3>
+  <p>При ёмкости 8 копируется <strong>8</strong> элементов.</p>
+
+<h3>6. Пустой список</h3>
+  <p>head.next указывает на <strong>tail</strong>.</p>
+
+<h3>7. Сколько элементов в кольце</h3>
+  <p>sz=9, start=6, end=1 → <strong>4</strong> элемента.</p>
+</section>
+
+<section class="card" id="seminar-mid">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест сем1</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Семинар · средние 8–21</h2>
+
+  <h3>8. Общие элементы</h3>
+  <p><strong>Условие.</strong> Два отсортированных массива; пересечение за O(n+m).</p>
+  <p><strong>Идея.</strong> Указатели с начал. Меньший двигаем вперёд (он меньше всего хвоста другого). Равны — в ответ, оба++. Назад незачем.</p>
+  <div class="ex"><strong>Пример.</strong> A=[1,2,4,5], B=[2,3,5,6] → 2, 5.</div>
+
+<h3>9. Два конца</h3>
+  <p><strong>Условие.</strong> Отсортированный массив; есть ли пара с суммой S?</p>
+  <p><strong>Идея.</strong> i слева, j справа. Сумма &gt; S → j−− (с этим j меньшие i только увеличат сумму). Сумма &lt; S → i++. ≤ n шагов.</p>
+  <div class="ex"><strong>Пример.</strong> [1,2,4,7], S=8 → 1+7=8.</div>
+
+  <div class="fig">
+<svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Два указателя кубиками">
+  <text x="20" y="22" font-size="13" font-weight="600">два указателя на кубиках (задача 9, S=8)</text>
+  <rect x="60" y="45" width="55" height="50" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <rect x="125" y="45" width="55" height="50" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="190" y="45" width="55" height="50" fill="#e8f1ee" stroke="#1f5c4d" stroke-width="2"/>
+  <rect x="255" y="45" width="55" height="50" fill="#1f5c4d" stroke="#0d3d32" stroke-width="2"/>
+  <text x="87" y="75" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">1</text>
+  <text x="152" y="75" text-anchor="middle" font-size="16">2</text>
+  <text x="217" y="75" text-anchor="middle" font-size="16">4</text>
+  <text x="282" y="75" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">7</text>
+  <text x="87" y="115" text-anchor="middle" font-size="12" fill="#8a4b1f">i</text>
+  <text x="282" y="115" text-anchor="middle" font-size="12" fill="#8a4b1f">j</text>
+  <text x="340" y="70" font-size="14">1+7=8 ✓</text>
+  <text x="340" y="90" font-size="12" fill="#6b665c">концы только сходятся</text>
+</svg>
+  <div class="caption">Кубики i и j — границы; середину не трогаем, пока не сдвинули конец.</div>
+  </div>
+
+<h3>10. Окно с суммой S</h3>
+  <p><strong>Условие.</strong> Элементы положительны; подотрезок суммы ровно S.</p>
+  <p><strong>Идея.</strong> Сумма &lt; S → расширяем r; &gt; S → сдвигаем l. Положительность даёт монотонность. Иначе см. задачу 25.</p>
+
+<h3>11. Минимум в окне</h3>
+  <p><strong>Условие.</strong> Для каждого окна длины k — минимум.</p>
+  <p><strong>Идея.</strong> Монотонный дек индексов (раздел выше). Θ(n).</p>
+
+<h3>12. Ближайший меньший слева</h3>
+  <p><strong>Условие.</strong> Для каждой позиции — ближайший слева строго меньший.</p>
+  <p><strong>Идея.</strong> Стек возрастающих индексов. Пока вершина ≥ a[i] — снимаем. Новая вершина — ответ; кладём i.</p>
+  <div class="ex"><strong>Пример.</strong> [2,1,4,3] → слева: нет, нет, 1, 1.</div>
+
+<h3>13. Самый тяжёлый подотрезок</h3>
+  <p><strong>Условие.</strong> Подотрезок максимальной суммы; sum[r+1]−sum[l].</p>
+  <p><strong>Идея.</strong> Для каждого r: текущий префикс минус минимум префиксов строго левее. Помним один min_prefix и max разности.</p>
+
+<h3>14. Не больше k нулей</h3>
+  <p><strong>Условие.</strong> Массив 0/1; самый длинный подотрезок с ≤ k нулями.</p>
+  <p><strong>Идея.</strong> r растёт; при нулях &gt; k двигаем l. Каждый конец ≤ n раз.</p>
+
+<h3>15. Две стенки</h3>
+  <p><strong>Условие.</strong> max min(h[i],h[j])·(j−i).</p>
+  <p><strong>Идея.</strong> Указатели с концов; сдвигаем более низкую сторону (с ней при меньшей ширине лучше не будет).</p>
+
+<h3>16. Лодки</h3>
+  <p><strong>Условие.</strong> Веса ≤ W; лодка ≤ W и ≤ 2 человека; минимум лодок.</p>
+  <p><strong>Идея.</strong> Сортировка; лёгкий+тяжёлый: если влезают — оба, иначе тяжёлый один. O(n log n).</p>
+
+<h3>17. Сколько окон не тяжелее S</h3>
+  <p><strong>Условие.</strong> Положительные элементы; число подотрезков суммы ≤ S.</p>
+  <p><strong>Идея.</strong> Для каждого r подогнать l; число окон с этим r: r−l+1. l только растёт.</p>
+
+<h3>18. Слияние</h3>
+  <p><strong>Условие.</strong> Два отсортированных → один за O(n+m).</p>
+  <p><strong>Идея.</strong> Всегда берём меньшую голову; хвост дописываем.</p>
+
+<h3>19. Прибавление на отрезке</h3>
+  <p><strong>Условие.</strong> q запросов +x на [l,r]; итоговый массив за O(n+q).</p>
+  <p><strong>Идея.</strong> Разностный массив + один префиксный проход.</p>
+
+<h3>20. Три цвета</h3>
+  <p><strong>Условие.</strong> Переставить 0,1,2 подряд; один проход, O(1) памяти.</p>
+  <p><strong>Идея.</strong> lo / i / hi. 0 — swap с lo, оба++; 2 — swap с hi, hi−−, i не двигаем; 1 — i++.</p>
+
+<h3>21. Ближайший больший справа</h3>
+  <p><strong>Условие.</strong> Для каждой позиции — ближайший справа строго больший.</p>
+  <p><strong>Идея.</strong> Стек убывающих; когда пришёл больший — он ответ для снятых.</p>
+</section>
+
+<section class="card" id="seminar-hard">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест сем8</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Семинар · сложные 22–30</h2>
+
+  <h3>22. Прямоугольник под гистограммой</h3>
+  <p><strong>Условие.</strong> Макс. площадь прямоугольника под столбцами высоты h[i].</p>
+  <p><strong>Идея.</strong> Монотонный стек: для каждого столбца границы, где он минимум; площадь = h[i]·ширина. Каждый столбец кладётся/снимается один раз.</p>
+
+<h3>23. Сумма ограниченной длины</h3>
+  <p><strong>Условие.</strong> Макс. сумма подотрезка длины ∈ [L,R].</p>
+  <p><strong>Идея.</strong> Для правого r нужен min префикса на окне индексов — структура задачи 11. Ответ = max(sum[r+1] − min).</p>
+
+<h3>24. Вода между столбцами</h3>
+  <p><strong>Условие.</strong> Сколько воды удержится.</p>
+  <p><strong>Идея.</strong> Два указателя + left_max/right_max; двигаем более низкую сторону.</p>
+
+<h3>25. Где два указателя врут</h3>
+  <div class="ex"><strong>Контрпример к задаче 10.</strong> Массив 3, −5, 4 и S=−1. Подотрезок [−5,4] есть, но монотонное правило «мало — вправо, много — влево» не обязательно его найдёт: сумма окна не монотонна.</div>
+  <p><strong>Как правильно.</strong> Множество уже виденных префиксов; текущий P закрывает сумму S ⇔ раньше был P−S (включая 0). Сортировка префиксов забывает порядок индексов.</p>
+
+<h3>26. Коридор max−min ≤ k</h3>
+  <p><strong>Идея.</strong> Два дека (min и max) + сдвиг l, пока разброс &gt; k. Каждый индекс входит/выходит ≤1 раза.</p>
+
+<h3>27. Три слагаемых = S</h3>
+  <p><strong>Идея.</strong> Сортировка; фиксируем i, на хвосте два указателя → O(n²). Без сортировки сдвиг врёт (пример 1,5,2,4 и S=7).</p>
+
+<h3>28. Сумма минимумов всех подотрезков</h3>
+  <p><strong>Идея.</strong> Для i границы L (слева ≤) и R (справа &lt;); вклад a[i]·(i−L)·(R−i). Два прохода монотонным стеком.</p>
+
+<h3>29. Сумма ⋮ k</h3>
+  <p><strong>Идея.</strong> Одинаковый остаток префиксов mod k → подотрезок между ними кратен k. Счётчики остатков; пустой префикс = 0 с начала.</p>
+
+<h3>30. Граница разностей</h3>
+  <p><strong>Разбор.</strong> Разностная ячейка — не сумма на отрезке. Наивный пересчёт префикса перед каждой суммой при Θ(n) запросах → Θ(n²). Если сначала все прибавления, потом все суммы — diff+префикс ещё спасает. Смешанный порядок — нужны структуры вне этих двух лекций.</p>
+</section>
+
+<section class="card" id="cheat">
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест сем22</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2>Что взять с собой</h2>
+  <div class="cheat">
+    <ul>
+      <li>Сравниваем операции от n, не секунды на глаз; линейка ~10⁸–10⁹ оп/сек</li>
+      <li>Треугольник вложенных циклов → n(n+1)/2 = Θ(n²)</li>
+      <li>Θ — зажат между C₁g и C₂g; O — только сверху; n=O(n²) правда</li>
+      <li>Число = многочлен в точке «основание»; умножение ↔ умножение многочленов</li>
+      <li>4 умножения половин → n²; Карацуба: 3 умножения → n^{log₂ 3}≈n¹·⁵⁸</li>
+      <li>AD+BC = (A+B)(C+D) − AC − BD</li>
+      <li>Дерево: работа уровня nᶜ qⁱ; q=a/bᶜ</li>
+      <li>q&lt;1 → nᶜ; q=1 → nᶜ log n; q&gt;1 → n^{log_b a}</li>
+      <li>i*=2 → log; два вложенных до n → n²; n + log внутри → n log n</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="video">
+
+<h2>Видео по теме</h2>
+  <p class="video"><a href="https://www.youtube.com/watch?v=v4cd1O4zkGw" target="_blank" rel="noopener">YouTube — Master theorem (лекция 1)</a></p>
+  <p class="video"><a href="https://www.youtube.com/watch?v=rEBsGRunses" target="_blank" rel="noopener">YouTube — префиксные суммы и два указателя (к лекции 2)</a></p>
+  <p class="src">Если вторая ссылка устарела — ищи «Тренировки по алгоритмам префиксные суммы два указателя».</p>
+</section>
+</main>
+</body>
+</html>
+

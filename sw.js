@@ -1,14 +1,20 @@
-const CACHE = "schedule-shell-v13";
+const CACHE = "schedule-shell-v14";
 const SHELL = [
   "./",
   "./index.html",
+  "./notebooks.html",
   "./styles.css",
-  "./styles.css?v=13",
+  "./styles.css?v=14",
   "./app.js",
-  "./app.js?v=13",
+  "./app.js?v=14",
+  "./notebooks.js",
+  "./notebooks.js?v=14",
+  "./theme.js",
+  "./theme.js?v=14",
   "./manifest.json",
   "./schedule.json",
   "./overrides.json",
+  "./notebooks.json",
   "./favicon.ico",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -40,52 +46,61 @@ function isLiveJson(url) {
     p.endsWith("/schedule.json") ||
     p.endsWith("schedule.json") ||
     p.endsWith("/overrides.json") ||
-    p.endsWith("overrides.json")
+    p.endsWith("overrides.json") ||
+    p.endsWith("/notebooks.json") ||
+    p.endsWith("notebooks.json")
   );
+}
+
+function isNotebookHtml(url) {
+  return url.pathname.includes("/notebooks/") && url.pathname.endsWith(".html");
 }
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET") return;
 
-  if (isLiveJson(url)) {
-    const name = url.pathname.endsWith("overrides.json") ? "overrides.json" : "schedule.json";
+  if (isLiveJson(url) || isNotebookHtml(url)) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE);
-        const cleanReq = new Request(new URL(name, self.registration.scope).href, {
-          credentials: "same-origin",
-        });
         try {
-          const res = await fetch(cleanReq, { cache: "no-cache" });
+          const res = await fetch(event.request, { cache: "no-cache" });
           if (res && res.ok) {
-            await cache.put(cleanReq, res.clone());
+            await cache.put(event.request, res.clone());
             return res;
           }
         } catch {
           /* offline */
         }
         const hit =
-          (await cache.match(cleanReq)) ||
-          (await cache.match("./" + name)) ||
-          (await cache.match(event.request));
+          (await cache.match(event.request)) ||
+          (await cache.match(event.request, { ignoreSearch: true }));
         if (hit) return hit;
-        if (name === "overrides.json") {
+        if (url.pathname.endsWith("overrides.json")) {
           return new Response(JSON.stringify({ items: [] }), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }
-        return new Response(JSON.stringify({ error: "offline", weeks: [], lessons: [] }), {
-          status: 503,
-          headers: { "Content-Type": "application/json" },
-        });
+        if (url.pathname.endsWith("notebooks.json")) {
+          return new Response(JSON.stringify({ items: [] }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (url.pathname.endsWith("schedule.json")) {
+          return new Response(JSON.stringify({ error: "offline", weeks: [], lessons: [] }), {
+            status: 503,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        return Response.error();
       })()
     );
     return;
   }
 
-  // App shell: cache first, then network
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE);

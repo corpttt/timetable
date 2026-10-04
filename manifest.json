@@ -1,8 +1,8 @@
 {
   "id": "/timetable/",
-  "name": "Расписание",
+  "name": "Расписание Б84",
   "short_name": "Расписание",
-  "description": "Личное расписание пар",
+  "description": "Расписание и тетради Б84",
   "start_url": "/timetable/",
   "scope": "/timetable/",
   "display": "standalone",
@@ -10,6 +10,20 @@
   "background_color": "#010409",
   "theme_color": "#0d1117",
   "lang": "ru",
+  "shortcuts": [
+    {
+      "name": "Расписание",
+      "short_name": "Пары",
+      "url": "/timetable/",
+      "description": "Недели и пары"
+    },
+    {
+      "name": "Тетради",
+      "short_name": "Тетради",
+      "url": "/timetable/notebooks.html",
+      "description": "Учебные HTML-тетради"
+    }
+  ],
   "icons": [
     {
       "src": "/timetable/icons/icon-192.png",

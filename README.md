@@ -4,19 +4,24 @@ Personal class schedule PWA for **26.Б84-мм**.
 
 ## Phone
 
-https://corpttt.github.io/timetable/ — Chrome → Install / Add to Home screen.
+- Расписание: https://corpttt.github.io/timetable/ — Chrome → Install / Add to Home screen.
+- Тетради (отдельная страница): https://corpttt.github.io/timetable/notebooks.html  
+  Можно держать две вкладки: расписание и тетрадь.
 
 ## Features
 
 - Colored subject timeline + **now** needle
 - Dashed border when a class exists only in local ODS or only on Timetable SPbU
 - Telegram overrides: badges **отмена** / **TG ✓** from forwarded messages
+- HTML notebooks catalog (no MD in the app); light/dark theme toggle
 
 ## Update base schedule
 
 ```bash
 python scripts/export_schedule_json.py
 python scripts/sync_timetable_spbu.py   # optional
+python scripts/build_skvoznaya_html.py  # if сквозная MD changed
+python scripts/sync_notebooks_to_app.py
 python scripts/publish_timetable.py     # push to corpttt/timetable Pages
 ```
 

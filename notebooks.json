@@ -1,0 +1,35 @@
+{
+  "updatedAt": null,
+  "items": [
+    {
+      "id": "geometry",
+      "title": "Геометрия · L / П",
+      "subject": "Геометрия и топология / практика",
+      "href": "./notebooks/geometry.html"
+    },
+    {
+      "id": "skvoznaya",
+      "title": "Множества · отображения · пределы",
+      "subject": "Алгебра / матанализ (сквозная)",
+      "href": "./notebooks/skvoznaya.html"
+    },
+    {
+      "id": "algorithms",
+      "title": "Алгоритмы и структуры данных",
+      "subject": "Алгоритмы",
+      "href": "./notebooks/algorithms.html"
+    },
+    {
+      "id": "informatics",
+      "title": "Информатика",
+      "subject": "Информатика",
+      "href": "./notebooks/informatics.html"
+    },
+    {
+      "id": "discrete",
+      "title": "Дискретная математика · индукция",
+      "subject": "Дискретная математика",
+      "href": "./notebooks/discrete.html"
+    }
+  ]
+}

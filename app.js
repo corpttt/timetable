@@ -303,7 +303,15 @@
       if (it.active === false) continue;
       if (it.dates && it.dates.length && date && !it.dates.includes(date)) continue;
       const keys = it.subjects || [];
-      const subjOk = !keys.length || keys.some((k) => n.includes(String(k).toLowerCase()));
+      const subjOk =
+        !keys.length ||
+        keys.some((k) => {
+          const key = String(k).toLowerCase();
+          if (key === "c++" || key === "си++") {
+            return n.includes("c++") || n.includes("программирован");
+          }
+          return n.includes(key);
+        });
       if (!subjOk) continue;
       if (it.place_14) {
         const placeOk =
@@ -706,7 +714,7 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=13").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=14").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }

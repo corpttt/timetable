@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -13,7 +13,8 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <title>Расписание</title>
-  <link rel="stylesheet" href="./styles.css?v=12">
+  <link rel="stylesheet" href="./styles.css?v=14">
+  <script src="./theme.js?v=14"></script>
 </head>
 <body>
   <header class="app-header">
@@ -23,6 +24,8 @@
         <span>расписание</span>
       </a>
       <div class="header-actions">
+        <a class="btn" href="./notebooks.html">Тетради</a>
+        <button type="button" class="btn" id="btn-theme" title="Тема">◑</button>
         <button type="button" class="btn" id="btn-now" title="К линии текущего времени">● Сейчас</button>
         <button type="button" class="btn" id="btn-refresh" title="Обновить данные">↻ Обновить</button>
       </div>
@@ -38,6 +41,6 @@
 
   <button type="button" class="fab-now" id="fab-now" title="К линии сейчас" aria-label="К линии сейчас">●</button>
   <div class="toast" id="toast" role="status"></div>
-  <script src="./app.js?v=12"></script>
+  <script src="./app.js?v=14"></script>
 </body>
 </html>
