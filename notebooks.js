@@ -71,13 +71,31 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=21").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=22").then((reg) => {
       reg.update().catch(() => {});
+      reg.addEventListener("updatefound", () => {
+        const w = reg.installing;
+        if (!w) return;
+        w.addEventListener("statechange", () => {
+          if (w.state === "installed" && navigator.serviceWorker.controller) {
+            location.reload();
+          }
+        });
+      });
     }).catch(() => {});
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    $("#btn-refresh-nb")?.addEventListener("click", () => loadList({ force: true }));
+    $("#btn-refresh-nb")?.addEventListener("click", async () => {
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+        const reg = await navigator.serviceWorker.getRegistration();
+        await reg?.update();
+      } catch (_) {}
+      await loadList({ force: true });
+      location.reload();
+    });
     loadList();
     registerSW();
   });

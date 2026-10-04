@@ -717,13 +717,34 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=21").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=22").then((reg) => {
       reg.update().catch(() => {});
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: "SKIP_WAITING" });
+      }
+      reg.addEventListener("updatefound", () => {
+        const w = reg.installing;
+        if (!w) return;
+        w.addEventListener("statechange", () => {
+          if (w.state === "installed" && navigator.serviceWorker.controller) {
+            location.reload();
+          }
+        });
+      });
     }).catch(() => {});
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    $("#btn-refresh")?.addEventListener("click", () => loadSchedule({ force: true }));
+    $("#btn-refresh")?.addEventListener("click", async () => {
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+        const reg = await navigator.serviceWorker.getRegistration();
+        await reg?.update();
+      } catch (_) {}
+      await loadSchedule({ force: true });
+      location.reload();
+    });
     // красная ⇄ (flip.js): из тетради — сюда к «сейчас»; из расписания — обратно в тетрадь
     try {
       if (sessionStorage.getItem("ucheba-flip-now") === "1") {
