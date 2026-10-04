@@ -350,12 +350,15 @@
     if (nearestKind === "now" && nearestKey === id) cls += " current";
     if (nearestKind === "next" && nearestKey === id) cls += " next-pair";
     if (sync === "spbu-only") cls += " mismatch spbu-only";
+    if (sync === "local-only") cls += " mismatch local-only";
     if (ov?.action === "cancel") cls += " cancelled";
     if (ov?.action === "confirm") cls += " tg-confirm";
     const syncBadge =
       sync === "spbu-only"
-        ? '<span class="badge badge-mismatch" title="Есть в Timetable Б84, нет в нашем файле">Timetable</span>'
-        : "";
+        ? '<span class="badge badge-mismatch badge-spbu-only" title="Есть в Timetable SPbU, нет в нашей таблице">только на Timetable</span>'
+        : sync === "local-only"
+          ? '<span class="badge badge-mismatch badge-local-only" title="Есть в нашей таблице, нет в Timetable SPbU">только в таблице</span>'
+          : "";
     const tgBadge =
       ov?.action === "cancel"
         ? `<span class="badge badge-cancel" title="${escapeHtml(ov.note || "отмена из Telegram")}">отмена</span>`
@@ -593,7 +596,7 @@
       : "—";
     const sync = state.data?.syncStats;
     const syncTxt = sync
-      ? `<span title="пары из Timetable Б84, которых нет у нас">Timetable ∆: ${sync.spbuOnly || 0}</span>`
+      ? `<span title="расхождения с Timetable SPbU">только Timetable: ${sync.spbuOnly || 0} · только таблица: ${sync.localOnly || 0}</span>`
       : "";
     $("#status-line").innerHTML = `
       <span>Сейчас: ${escapeHtml(now.label)}</span>
@@ -714,7 +717,7 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=14").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=15").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }
