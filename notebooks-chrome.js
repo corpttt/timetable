@@ -205,11 +205,12 @@
     btn.id = "fab-flip";
     btn.className = "fab-flip";
     btn.textContent = "⇄";
-    btn.title = "В расписание";
-    btn.setAttribute("aria-label", "Перейти в расписание");
+    btn.title = "В расписание · к сейчас";
+    btn.setAttribute("aria-label", "Перейти в расписание к текущему времени");
     btn.addEventListener("click", () => {
       try {
         localStorage.setItem(KEY, hereRel());
+        sessionStorage.setItem("ucheba-flip-now", "1");
       } catch (_) {}
       location.href = appBase() + "index.html";
     });

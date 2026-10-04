@@ -1,5 +1,6 @@
 (function () {
   const KEY = "ucheba-flip-nb";
+  const NOW_FLAG = "ucheba-flip-now";
 
   function appBase() {
     const p = location.pathname;
@@ -46,6 +47,9 @@
       return;
     }
     saveNotebookSpot();
+    try {
+      sessionStorage.setItem(NOW_FLAG, "1");
+    } catch (_) {}
     location.href = absFromRel("index.html");
   }
 
@@ -60,10 +64,12 @@
     btn.textContent = "⇄";
     btn.title = onSchedule()
       ? "В тетрадь (то же место)"
-      : "В расписание";
+      : "В расписание · к сейчас";
     btn.setAttribute(
       "aria-label",
-      onSchedule() ? "Перейти в тетрадь" : "Перейти в расписание"
+      onSchedule()
+        ? "Перейти в тетрадь"
+        : "Перейти в расписание к текущему времени"
     );
     btn.addEventListener("click", go);
     document.body.appendChild(btn);

@@ -717,15 +717,19 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=20").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=21").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     $("#btn-refresh")?.addEventListener("click", () => loadSchedule({ force: true }));
-    $("#btn-now")?.addEventListener("click", () => jumpToNow(true));
-    $("#fab-now")?.addEventListener("click", () => jumpToNow(true));
+    // красная ⇄ (flip.js): из тетради — сюда к «сейчас»; из расписания — обратно в тетрадь
+    try {
+      if (sessionStorage.getItem("ucheba-flip-now") === "1") {
+        sessionStorage.removeItem("ucheba-flip-now");
+      }
+    } catch (_) {}
 
     // Immediate offline paint, then try network
     const cached = readLocalCache();
