@@ -503,6 +503,13 @@ html[data-theme="light"] .badge-local-only {
   color: var(--muted);
   font-size: 0.86rem;
 }
+.nb-card-progress {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--link);
+}
 
 @media (max-width: 560px) {
   .timeline { padding-left: calc(var(--rail) + 0.65rem); }

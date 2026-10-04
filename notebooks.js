@@ -12,6 +12,18 @@
     toast._t = setTimeout(() => el.classList.remove("show"), 1800);
   }
 
+  function progressHint(id) {
+    try {
+      const raw = localStorage.getItem("nb-scroll:" + id);
+      if (!raw) return "";
+      const s = JSON.parse(raw);
+      if (!s || !(s.y > 120 || s.hash)) return "";
+      return '<span class="nb-card-progress">есть место чтения</span>';
+    } catch (_) {
+      return "";
+    }
+  }
+
   function render(items) {
     const root = listEl();
     if (!root) return;
@@ -25,6 +37,7 @@
       <a class="nb-card" href="${it.href}">
         <span class="nb-card-title">${escapeHtml(it.title)}</span>
         <span class="nb-card-sub">${escapeHtml(it.subject || "")}</span>
+        ${progressHint(it.id)}
       </a>`
       )
       .join("");
@@ -58,7 +71,7 @@
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=15").then((reg) => {
+    navigator.serviceWorker.register("./sw.js?v=16").then((reg) => {
       reg.update().catch(() => {});
     }).catch(() => {});
   }

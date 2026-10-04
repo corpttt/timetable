@@ -13,7 +13,7 @@ Personal class schedule PWA for **26.Б84-мм**.
 - Colored subject timeline + **now** needle
 - Dashed border when a class exists only in local ODS or only on Timetable SPbU
 - Telegram overrides: badges **отмена** / **TG ✓** from forwarded messages
-- HTML notebooks catalog (no MD in the app); light/dark theme toggle
+- HTML notebooks catalog (no MD in the app); shared chrome (back / theme / resume scroll); light/dark theme
 
 ## Update base schedule
 
