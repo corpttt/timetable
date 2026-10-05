@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru" data-nb-id="algebra-practice" data-nb-title="Алгебра · практика">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Алгебра · практика</title>
+<style>
+:root {
+  --bg: #f4f1ea; --card: #fff; --ink: #1a1a18; --muted: #6a655c;
+  --line: #e0dbd0; --acc: #1f5c4d; --acc2: #8a4b1f; --soft: #e7f2ee;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font: 16px/1.55 "Segoe UI", "Cambria Math", "Segoe UI Symbol", system-ui, sans-serif;
+  color: var(--ink); background: var(--bg);
+}
+header {
+  max-width: 48rem; margin: 0 auto; padding: 1.25rem 1.25rem 0.5rem;
+  position: sticky; top: 0;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(6px); z-index: 5;
+}
+h1 { font-size: 1.4rem; margin: 0 0 0.35rem; }
+.note { color: var(--muted); font-size: 0.92rem; margin: 0 0 0.75rem; }
+main { max-width: 48rem; margin: 0 auto 3rem; padding: 0 1.25rem; }
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 1rem 1.15rem 1.25rem; margin-bottom: 0.9rem;
+  border-top: 3px solid var(--acc);
+}
+.prose h1 { font-size: 1.35rem; margin: 0.2rem 0 0.8rem; }
+.prose h2 {
+  font-size: 1.15rem; margin: 1.6rem 0 0.55rem; padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--line); color: var(--acc);
+}
+.prose h3 { font-size: 1.02rem; margin: 1.2rem 0 0.4rem; }
+.prose p { margin: 0.55rem 0; }
+.prose ul, .prose ol { margin: 0.4rem 0 0.55rem 1.2rem; padding: 0; }
+.prose li { margin: 0.2rem 0; }
+.prose hr { border: none; border-top: 1px solid var(--line); margin: 1.4rem 0; }
+.prose blockquote {
+  margin: 0.75rem 0; padding: 0.55rem 0.85rem; background: #f7f5f0;
+  border-left: 3px solid var(--line); color: var(--muted);
+}
+.prose a { color: var(--acc); }
+table {
+  border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.94rem;
+}
+th, td {
+  border: 1px solid var(--line); padding: 0.4rem 0.55rem;
+  text-align: left; vertical-align: top;
+}
+th { background: #f0eee8; }
+code {
+  background: #efece4; padding: 0.05rem 0.3rem; border-radius: 4px; font-size: 0.9em;
+}
+pre {
+  background: #1e1e1e; color: #eee; padding: 0.85rem 1rem;
+  overflow: auto; border-radius: 8px; font-size: 0.88rem;
+}
+.formula-box {
+  margin: 0.9rem 0; padding: 0.85rem 1rem 0.95rem; border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--acc) 35%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 8%, var(--card)), var(--card));
+}
+.formula-box-label {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--acc); margin-bottom: 0.35rem;
+}
+.formula-box-body {
+  font-family: "Cambria Math", "Segoe UI Symbol", "Segoe UI", serif;
+  font-size: 1.12rem; line-height: 1.45;
+}
+html[data-theme="dark"] {
+  --bg: #0d1117; --card: #161b22; --ink: #e6edf3; --muted: #8b949e; --line: #30363d;
+}
+</style>
+
+<meta name="theme-color" content="#0d1117">
+<link rel="stylesheet" href="../notebooks-chrome.css?v=22">
+<script src="../notebooks-chrome.js?v=22" defer></script>
+<script src="../flip.js?v=22" defer></script>
+</head>
+<body>
+<header>
+  <h1>Алгебра · практика</h1>
+  <p class="note">Единая тетрадь практики · блоки П1, П2, …</p>
+</header>
+<main>
+  <div class="card">
+    <div class="prose">
+<h1>Алгебра · практика</h1>
+<p>Единая тетрадь <strong>практики</strong> по алгебре.<br>
+Новые пары дописываются сюда блоками <strong>П1</strong>, <strong>П2</strong>, … — отдельные файлы <code>DD.MM-тема.md</code> больше не заводим.</p>
+<p>Теория (множества, сравнения, Эйлер, перестановки, …) — в сквозной тетради:<br>
+<code>предметы/сквозной/тетрадь-множества-отображения-пределы.md</code> (§§14–15, §20 и др.).</p>
+<blockquote>
+<p>Формулы — Unicode.<br>
+У задачи: условие своими словами → идея по шагам → ответ/формула (см. <code>ne-szhimat</code>).</p>
+</blockquote>
+<h2 id="источники-листков">Источники листков</h2>
+<div class="nb-table-scroll"><table>
+<thead>
+<tr>
+<th>Файл</th>
+<th>Куда в тетради</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="листы/03.10-сравнения-кто-эйлер-перестановки/"><code>листы/03.10-сравнения-кто-эйлер-перестановки/</code></a> (фото 01–24)</td>
+<td>П1 (теория уже в сквозной; задачи практики — сюда)</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="оглавление">Оглавление</h2>
+<ol>
+<li><a href="#п1--сравнения-кто-эйлер-перестановки-0310">П1 · сравнения, КТО, Эйлер, перестановки (03.10)</a></li>
+</ol>
+<hr>
+<h2 id="п1-сравнения-кто-эйлер-перестановки-03-10">П1 · сравнения, КТО, Эйлер, перестановки (03.10)</h2>
+<p><strong>Источник.</strong> Фото листов: <a href="листы/03.10-сравнения-кто-эйлер-перестановки/"><code>листы/03.10-сравнения-кто-эйлер-перестановки/</code></a>.</p>
+<p><strong>Теория (уже разобрана).</strong> Сквозная тетрадь: §15.8–15.11 (сравнения, КТО, φ, Эйлер/Ферма), §20 (перестановки, циклы, чётность, Aₙ).</p>
+<p><strong>Статус.</strong> Каркас практики: нумерованный разбор задач с листков сюда ещё не перенесён.<br>
+Чтобы заполнить — в чат: «разбери практику алгебры П1» (можно указать номера задач с фото).</p>
+<blockquote>
+<p>⚡ <strong>Быстрый тест:</strong> после заполнения блока — в чат <code>тест П1</code></p>
+</blockquote>
+    </div>
+  </div>
+</main>
+</body>
+</html>

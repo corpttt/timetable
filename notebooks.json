@@ -10,8 +10,20 @@
     {
       "id": "skvoznaya",
       "title": "Множества · отображения · пределы",
-      "subject": "Алгебра / матанализ (сквозная)",
+      "subject": "Алгебра / матанализ (теория, сквозная)",
       "href": "./notebooks/skvoznaya.html"
+    },
+    {
+      "id": "matan-practice",
+      "title": "Матанализ · практика",
+      "subject": "Математический анализ",
+      "href": "./notebooks/matan-practice.html"
+    },
+    {
+      "id": "algebra-practice",
+      "title": "Алгебра · практика",
+      "subject": "Алгебра",
+      "href": "./notebooks/algebra-practice.html"
     },
     {
       "id": "algorithms",
