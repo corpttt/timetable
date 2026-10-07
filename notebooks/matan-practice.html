@@ -76,7 +76,14 @@ pre {
 html[data-theme="dark"] {
   --bg: #0d1117; --card: #161b22; --ink: #e6edf3; --muted: #8b949e; --line: #30363d;
 }
+.katex-display { margin: 0.75rem 0; overflow-x: auto; overflow-y: hidden; }
 </style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});"></script>
+
 
 <meta name="theme-color" content="#0d1117">
 <link rel="stylesheet" href="../notebooks-chrome.css?v=22">
@@ -86,7 +93,7 @@ html[data-theme="dark"] {
 <body>
 <header>
   <h1>Матанализ · практика</h1>
-  <p class="note">Единая тетрадь практики · блоки П1, П2, …</p>
+  <p class="note">Практика · индекс МП-ПN</p>
 </header>
 <main>
   <div class="card">
@@ -94,8 +101,8 @@ html[data-theme="dark"] {
 <h1>Матанализ · практика</h1>
 <p>Единая тетрадь <strong>практики</strong> по математическому анализу.<br>
 Новые пары дописываются сюда блоками <strong>П1</strong>, <strong>П2</strong>, … — отдельные файлы <code>DD.MM-тема.md</code> больше не заводим.</p>
-<p>Теория (множества, пределы, …) — в сквозной тетради:<br>
-<code>предметы/сквозной/тетрадь-множества-отображения-пределы.md</code>.</p>
+<p>Теория — <a href="тетрадь-теория.md"><code>тетрадь-теория.md</code></a> (коды <code>МТ-§N</code>).<br>
+Индекс всех тетрадей: <a href="../ИНДЕКС-тетрадей.md"><code>предметы/ИНДЕКС-тетрадей.md</code></a>.</p>
 <blockquote>
 <p>Формулы — Unicode.<br>
 У задачи: условие своими словами → идея по шагам → ответ/формула (см. <code>ne-szhimat</code>).</p>
@@ -156,6 +163,11 @@ html[data-theme="dark"] {
 База n = 1: 1 = 1·2/2.<br>
 Переход: сумма до k+1 = k(k+1)/2 + (k+1) = (k+1)(k+2)/2.</p>
 <h3 id="1-2-задача-неравенство-бернулли">1.2. Задача. Неравенство Бернулли</h3>
+<div class="formula-box" role="note">
+  <div class="formula-box-label">Бернулли</div>
+  <div class="formula-box-body">$(1+x)^n\ge 1+nx$ ($x\ge -1,\ n\in\mathbb{N}$)</div>
+</div>
+
 <p><strong>Условие.</strong> Доказать: (1+x)ⁿ ≥ 1 + nx при n ∈ ℕ, x ≥ −1.</p>
 <p><strong>Идея (индукция, как в листке).</strong></p>
 <ol>
@@ -245,13 +257,18 @@ html[data-theme="dark"] {
 <p><em>На листе занятия как раз разбирали индукцию, Бернулли и бином — №1, 5, 7 прямо по теме П1.</em></p>
 <p>Внизу листа начато: «E ограничено, если ∃ A, B …» — определение ограниченного множества; полностью не попало в кадр. Теория ограниченности — сквозная §10 / окрестности в П5.</p>
 <blockquote>
-<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест П1</code></p>
+<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест МП-П1</code> — индукция · Бернулли · бином</p>
 </blockquote>
 <hr>
 <h2 id="п2-ε-n-и-простейшие-пределы">П2 · ε–N и простейшие пределы</h2>
 <p><strong>Источник.</strong> Фото доски и тетради в <a href="практика/документ-16-29.09.pdf"><code>практика/документ-16-29.09.pdf</code></a> (листы с определениями и 1/n).<br>
 <strong>Теория рядом.</strong> Сквозная: §§9–10 (предел последовательности, свойства), §13 (±∞).</p>
 <h3 id="2-1-последовательность-и-предел-определения-с-доски">2.1. Последовательность и предел (определения с доски)</h3>
+<div class="formula-box" role="note">
+  <div class="formula-box-label">Предел ε–N</div>
+  <div class="formula-box-body">$\lim x_n=a\iff\forall\varepsilon>0\ \exists N\ \forall n>N:\ |x_n-a|<\varepsilon$</div>
+</div>
+
 <p><strong>Определение.</strong> Последовательность — отображение f: ℕ → ℝ, aₙ = f(n).</p>
 <p><strong>Определение (предел).</strong> limₙ→∞ aₙ = a означает:</p>
 <p>∀ ε &gt; 0 ∃ N ∈ ℕ: ∀ n &gt; N  ⇒  |aₙ − a| &lt; ε.</p>
@@ -292,7 +309,7 @@ aₙ → −∞, если ∀ M &gt; 0 ∃ N: ∀ n &gt; N ⇒ aₙ &lt; −M.<b
 </ol>
 <p><strong>Ответ.</strong> Предела нет (последовательность «прыгает» между −1 и 1).</p>
 <blockquote>
-<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест П2</code></p>
+<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест МП-П2</code> — ε–N · простейшие пределы</p>
 </blockquote>
 <hr>
 <h2 id="п3-рациональные-дроби-и-сравнение-роста">П3 · Рациональные дроби и сравнение роста</h2>
@@ -385,12 +402,12 @@ aₙ → −∞, если ∀ M &gt; 0 ∃ N: ∀ n &gt; N ⇒ aₙ &lt; −M.<b
 <p><strong>50.</strong> lim (1 + a + … + aⁿ) / (1 + b + … + bⁿ) при |a| &lt; 1, |b| &lt; 1.<br>
 <em>Идея:</em> суммы → 1/(1−a) и 1/(1−b). <strong>Ответ.</strong> (1−b)/(1−a).</p>
 <blockquote>
-<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест П3</code></p>
+<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест МП-П3</code> — дроби · сравнение роста</p>
 </blockquote>
 <hr>
 <h2 id="п4-графики-сложных-функций">П4 · Графики сложных функций</h2>
 <p><strong>Источник.</strong> Тетрадные листы в начале <a href="практика/документ-16-29.09.pdf"><code>практика/документ-16-29.09.pdf</code></a> (гипербола + композиция с показательной / логарифмом).<br>
-<em>Замечание.</em> На первом листе сверху обрывок доказательства Больцано–Вейерштрасса (теория лекции 24.09) — он уже в сквозной §17; здесь только практическая часть с графиками.</p>
+<em>Замечание.</em> На первом листе сверху обрывок доказательства Больцано–Вейерштрасса (теория лекции 24.09) — он уже в <code>МТ-§14</code>; здесь только практическая часть с графиками.</p>
 <h3 id="4-1-внутренняя-функция-y-x-1-x-2">4.1. Внутренняя функция y = (x−1)/(x+2)</h3>
 <p><strong>Условие.</strong> Построить график дробно-линейной y = (x−1)/(x+2) (нужна как внутренняя для показательной).</p>
 <p><strong>Идея.</strong></p>
@@ -425,7 +442,7 @@ aₙ → −∞, если ∀ M &gt; 0 ∃ N: ∀ n &gt; N ⇒ aₙ &lt; −M.<b
 </ol>
 <p><strong>Ответ.</strong> Асимптоты x = 0, x = 1; между ними «лощина» с минимумом (1/2, 2); слева от 0 и справа от 1 ветви уходят вниз к −∞ при |x| → ∞.</p>
 <blockquote>
-<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест П4</code></p>
+<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест МП-П4</code> — графики сложных функций</p>
 </blockquote>
 <hr>
 <h2 id="п5-предел-функции-документ-15">П5 · Предел функции (документ 15)</h2>
@@ -446,6 +463,11 @@ aₙ → −∞, если ∀ M &gt; 0 ∃ N: ∀ n &gt; N ⇒ aₙ &lt; −M.<b
 <p><strong>Утверждение.</strong> Если lim_{x→a} f(x) = A ∈ ℝ, то f ограничена в некоторой проколотой окрестности a: ∃ ω̇₀(a), ∃ C &gt; 0: |f(x)| ≤ C на ω̇₀(a) ∩ E.</p>
 <p><strong>Идея.</strong> Взять ε = 1 ⇒ |f(x) − A| &lt; 1 ⇒ |f(x)| &lt; 1 + |A|. Положить C = 1 + |A|.</p>
 <h3 id="5-3-эквивалентность-коши-гейне">5.3. Эквивалентность Коши ⇔ Гейне</h3>
+<div class="formula-box" role="note">
+  <div class="formula-box-label">Коши ⇔ Гейне</div>
+  <div class="formula-box-body">$\varepsilon$–$\delta$  $\Leftrightarrow$  $\forall\{x_n\}\to a,\ x_n\neq a:\ f(x_n)\to A$</div>
+</div>
+
 <p><strong>Теорема.</strong> f(x) → A при x → a ⟺ для любой последовательности xₙ ∈ E, xₙ ≠ a, xₙ → a выполнено f(xₙ) → A.</p>
 <p><strong>Коши ⇒ Гейне.</strong> Окрестность G(A) даёт окрестность ω(a); хвост xₙ попадает в ω(a) ⇒ f(xₙ) ∈ G(A).</p>
 <p><strong>Гейне ⇒ Коши (от противного).</strong> Если Коши ложно, есть G₀(A) такая, что в каждой ωₙ(a) найдётся xₙ′ ∈ E ∩ ωₙ(a), xₙ′ ≠ a, с f(xₙ′) ∉ G₀(A). Тогда xₙ′ → a, но f(xₙ′) не → A — противоречие Гейне.</p>
@@ -463,7 +485,7 @@ aₙ → −∞, если ∀ M &gt; 0 ∃ N: ∀ n &gt; N ⇒ aₙ &lt; −M.<b
 <p><em>Своими словами.</em> Те же правила, что для последовательностей: предел «проходит» через +, ·, / (где можно) и сохраняет неравенства.</p>
 <p><strong>Пример.</strong> lim_{x→2} (x² + 1)/(x + 1) = (4+1)/(2+1) = 5/3 — через арифметику, знаменатель → 3 ≠ 0.</p>
 <blockquote>
-<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест П5</code></p>
+<p>⚡ <strong>Быстрый тест:</strong> в чат Cursor напиши <code>тест МП-П5</code> — предел функции</p>
 </blockquote>
     </div>
   </div>

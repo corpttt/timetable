@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ru" data-nb-id="geometry-theory" data-nb-title="Геометрия · теория">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Геометрия · теория</title>
+<style>
+:root {
+  --bg: #f4f1ea; --card: #fff; --ink: #1a1a18; --muted: #6a655c;
+  --line: #e0dbd0; --acc: #1f5c4d; --soft: #e7f2ee;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 16px/1.55 "Segoe UI", "Cambria Math", "Segoe UI Symbol", system-ui, sans-serif;
+  color: var(--ink); background: var(--bg);
+}
+.cm { font-family: "Cambria Math", serif; }
+.ovl { text-decoration: overline; }
+.vec { position: relative; display: inline-block; }
+.vec::after {
+  content: "→"; position: absolute; left: 0; right: 0; top: -0.72em;
+  font-size: 0.7em; line-height: 1; text-align: center;
+}
+header {
+  max-width: 48rem; margin: 0 auto; padding: 1.25rem 1.25rem 0.5rem;
+  position: sticky; top: 0;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(6px); z-index: 5;
+}
+h1 { font-size: 1.4rem; margin: 0 0 0.35rem; }
+.note { color: var(--muted); font-size: 0.92rem; margin: 0 0 0.75rem; }
+main { max-width: 48rem; margin: 0 auto 3rem; padding: 0 1.25rem; }
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 1rem 1.15rem 1.25rem; margin-bottom: 0.9rem;
+  border-top: 3px solid var(--acc);
+}
+.prose h1 { font-size: 1.35rem; margin: 0.2rem 0 0.8rem; }
+.prose h2 {
+  font-size: 1.15rem; margin: 1.6rem 0 0.55rem; padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--line); color: var(--acc);
+}
+.prose h3 { font-size: 1.02rem; margin: 1.2rem 0 0.4rem; }
+.prose p { margin: 0.55rem 0; }
+.prose ul, .prose ol { margin: 0.4rem 0 0.55rem 1.2rem; padding: 0; }
+.prose li { margin: 0.2rem 0; }
+.prose hr { border: none; border-top: 1px solid var(--line); margin: 1.4rem 0; }
+.prose blockquote {
+  margin: 0.75rem 0; padding: 0.55rem 0.85rem; background: #f7f5f0;
+  border-left: 3px solid var(--line); color: var(--muted);
+}
+.prose a { color: var(--acc); }
+table {
+  border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.94rem;
+}
+th, td {
+  border: 1px solid var(--line); padding: 0.4rem 0.55rem;
+  text-align: left; vertical-align: top;
+}
+th { background: #f0eee8; }
+code {
+  background: #efece4; padding: 0.05rem 0.3rem; border-radius: 4px; font-size: 0.9em;
+}
+pre {
+  background: #1e1e1e; color: #eee; padding: 0.85rem 1rem;
+  overflow: auto; border-radius: 8px; font-size: 0.88rem;
+}
+.fig {
+  margin: 0.85rem 0; padding: 0.65rem; background: #faf9f6;
+  border: 1px dashed var(--line); border-radius: 10px;
+  overflow-x: auto; text-align: center;
+}
+.fig figcaption {
+  color: var(--muted); font-size: 0.88rem; margin-top: 0.35rem; text-align: left;
+}
+.figs { display: grid; gap: 0.65rem; margin: 0.85rem 0; }
+@media (min-width: 640px) { .figs.two { grid-template-columns: 1fr 1fr; } }
+svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.badge {
+  display: inline-block; font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.04em; padding: 0.15rem 0.5rem; border-radius: 999px;
+  margin-bottom: 0.45rem; background: var(--soft); color: var(--acc);
+}
+.banner {
+  background: #eef6f3; border: 1px solid #c5ddd4;
+  padding: 0.65rem 0.9rem; border-radius: 8px; margin-bottom: 0.85rem;
+  font-size: 0.92rem; color: var(--muted);
+}
+.formula-box {
+  margin: 0.9rem 0; padding: 0.85rem 1rem 0.95rem; border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--acc) 35%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 8%, var(--card)), var(--card));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--acc) 12%, transparent);
+}
+.formula-box-label {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--acc); margin-bottom: 0.35rem;
+}
+.formula-box-body {
+  font-family: "Cambria Math", "Segoe UI Symbol", "Segoe UI", serif;
+  font-size: 1.12rem; line-height: 1.45; color: var(--ink);
+}
+.quiz-trigger {
+  margin: 1.2rem 0; padding: .7rem 1rem;
+  border-left: 4px solid var(--acc); background: var(--soft);
+}
+html[data-theme="dark"] {
+  --bg: #0d1117; --card: #161b22; --ink: #e6edf3; --muted: #8b949e;
+  --line: #30363d; --soft: #1a3d34;
+}
+html[data-theme="dark"] .banner { background: #122018; border-color: #244036; }
+html[data-theme="dark"] .prose blockquote { background: #12171e; }
+html[data-theme="dark"] th { background: #21262d; }
+html[data-theme="dark"] code { background: #21262d; }
+html[data-theme="dark"] .fig { background: #12171e; }
+</style>
+
+<meta name="theme-color" content="#0d1117">
+<link rel="stylesheet" href="../notebooks-chrome.css?v=22">
+<script src="../notebooks-chrome.js?v=22" defer></script>
+<script src="../flip.js?v=22" defer></script>
+</head>
+<body>
+<header>
+  <h1>Геометрия · теория</h1>
+  <p class="note">Лекции · индекс ГЛ-LN</p>
+</header>
+<main>
+<div class="card">
+  <div class="prose">
+    <p class="badge">ГЛ · теория</p>
+    <p>Лекции по <strong>геометрии и топологии</strong> (Антоник и др.). Рисунки SVG встроены; кэш — <code>_geometry_figures.html</code>.</p>
+    <p>Практика (Цубербиллер) — отдельная тетрадь: <a href="тетрадь-практика.html"><code>тетрадь-практика.html</code></a> · индекс <code>ГП-ПN</code>.</p>
+    <p>Блок про множества с лекции 07.09 пересекается с <a href="../математический-анализ/тетрадь-теория.md"><code>МТ-§1</code>…<code>МТ-§5</code></a>; здесь — сжатый разбор с примерами.</p>
+    <p><strong>Проверка:</strong> в чат <code>тест ГЛ-L4</code> и т.п. (см. <a href="../ИНДЕКС-тетрадей.md">ИНДЕКС-тетрадей</a>).</p>
+  </div>
+</div>
+  <div class="card">
+    <div class="prose">
+<h2 id="оглавление">Оглавление</h2>
+<h3 id="сторона-l--лекции-геометрия-и-топология">Сторона L · Лекции (геометрия и топология)</h3>
+<ul>
+<li><a href="#l0-как-пользоваться-стороной-l" target="_blank" rel="noopener">L0. Как пользоваться стороной L</a></li>
+<li><a href="#l1-0709--множества-операции-отображения" target="_blank" rel="noopener">L1. 07.09 — множества, операции, отображения</a></li>
+</ul>
+<p>  - <a href="#множество-и-принадлежность" target="_blank" rel="noopener">Множество и принадлежность</a>   - <a href="#операции-и-де-морган" target="_blank" rel="noopener">Операции и Де Морган</a>   - <a href="#декартово-произведение" target="_blank" rel="noopener">Декартово произведение</a>   - <a href="#подмножества-и-булеан" target="_blank" rel="noopener">Подмножества и булеан</a>   - <a href="#соответствия-и-отображения" target="_blank" rel="noopener">Соответствия и отображения</a></p>
+<ul>
+<li><a href="#l2-1409--векторные-пространства" target="_blank" rel="noopener">L2. 14.09 — векторные пространства</a></li>
+</ul>
+<p>  - <a href="#аксиомы-векторного-пространства" target="_blank" rel="noopener">Аксиомы</a>   - <a href="#следствия-аксиом" target="_blank" rel="noopener">Следствия аксиом</a>   - <a href="#примеры-векторных-пространств" target="_blank" rel="noopener">Примеры: ℝⁿ, отображения, V_Q</a>   - <a href="#линейные-отображения-и-изоморфизм" target="_blank" rel="noopener">Линейные отображения и изоморфизм</a></p>
+<ul>
+<li><a href="#l3-2109--аффинные-пространства" target="_blank" rel="noopener">L3. 21.09 — аффинные пространства</a></li>
+</ul>
+<p>  - <a href="#аксиомы-аффинного-пространства" target="_blank" rel="noopener">Аксиомы аффинного пространства</a>   - <a href="#следствия-xx--0-и-xy--yx" target="_blank" rel="noopener">Следствия XX = 0 и −XY = YX</a>   - <a href="#примеры-аффинных-пространств" target="_blank" rel="noopener">Примеры аффинных пространств</a>   - <a href="#отношение-эквивалентности-и-фактор" target="_blank" rel="noopener">Отношение эквивалентности и фактор</a>   - <a href="#направленные-отрезки--свободные-векторы" target="_blank" rel="noopener">Направленные отрезки → свободные векторы</a></p>
+<ul>
+<li><a href="#l4-2809--свободные-векторы-лнз-базис-гамеля" target="_blank" rel="noopener">L4. 28.09 — свободные векторы, ЛНЗ, базис Гамеля</a></li>
+</ul>
+<p>  - <a href="#операции-на-v-и-корректность" target="_blank" rel="noopener">Операции на V и корректность</a> <em>(рис. L-4a)</em>   - <a href="#изоморфизм-ψ--v--vₙ" target="_blank" rel="noopener">Изоморфизм Ψ : V → Vₙ</a>   - <a href="#линейная-комбинация-и-лнз" target="_blank" rel="noopener">Линейная комбинация и ЛНЗ</a> <em>(рис. L-4b–c)</em>   - <a href="#порождающий-набор-и-базис" target="_blank" rel="noopener">Порождающий набор и базис</a>   - <a href="#конечномерность-и-dim-v" target="_blank" rel="noopener">Конечномерность и dim V</a>   - <a href="#аддитивные-но-не-однородные-функции" target="_blank" rel="noopener">Аддитивные, но не однородные функции</a></p>
+<div class="figs two">
+<figure class="fig">
+        <svg viewBox="0 0 320 220" width="320" height="220" aria-label="Базис R2">
+          <defs>
+            <marker id="L-4b-L-4b-a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-4b-L-4b-a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+            <marker id="L-4b-L-4b-a3" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#a33"/></marker>
+          </defs>
+          <line x1="40" y1="180" x2="280" y2="180" stroke="#bbb"/>
+          <line x1="40" y1="180" x2="40" y2="30" stroke="#bbb"/>
+          <line x1="40" y1="180" x2="160" y2="180" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-4b-L-4b-a1)"/>
+          <line x1="40" y1="180" x2="40" y2="80" stroke="#8a4b1f" stroke-width="2.5" marker-end="url(#L-4b-L-4b-a2)"/>
+          <line x1="40" y1="180" x2="220" y2="100" stroke="#a33" stroke-width="2.5" marker-end="url(#L-4b-L-4b-a3)"/>
+          <text x="100" y="198" font-size="12" fill="#1f5c4d">e₁=(1,0)</text>
+          <text x="48" y="70" font-size="12" fill="#8a4b1f">e₂=(0,1)</text>
+          <text x="200" y="90" font-size="12" fill="#a33">3e₁+(−2)e₂</text>
+          <text x="200" y="108" font-size="12" fill="#a33">=(3,−2)</text>
+          <text x="48" y="205" font-size="12">O</text>
+        </svg>
+        <figcaption>Рис. L-4b · базис ℝ²: e₁, e₂ ЛНЗ и порождают; любой вектор — одна комбинация</figcaption>
+      </figure>
+<figure class="fig">
+        <svg viewBox="0 0 300 180" width="300" height="180" aria-label="ЛЗ набор">
+          <defs>
+            <marker id="L-4c-L-4c-a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-4c-L-4c-a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+          </defs>
+          <line x1="40" y1="140" x2="260" y2="140" stroke="#bbb"/>
+          <line x1="40" y1="140" x2="40" y2="30" stroke="#bbb"/>
+          <line x1="40" y1="140" x2="160" y2="140" stroke="#1f5c4d" stroke-width="3" marker-end="url(#L-4c-L-4c-a1)"/>
+          <line x1="40" y1="140" x2="220" y2="140" stroke="#8a4b1f" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#L-4c-L-4c-a2)"/>
+          <text x="90" y="128" font-size="12" fill="#1f5c4d">(1,0)</text>
+          <text x="170" y="160" font-size="12" fill="#8a4b1f">(2,0)=2·(1,0)</text>
+          <text x="50" y="50" font-size="12" fill="#a33">зависимы: лежат на одной прямой</text>
+        </svg>
+        <figcaption>Рис. L-4c · не ЛНЗ: один вектор — растяжение другого</figcaption>
+      </figure>
+<figure class="fig">
+        <svg viewBox="0 0 380 200" width="380" height="200" aria-label="Сумма из двух начал">
+          <defs>
+            <marker id="L-4a-L-4a-a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-4a-L-4a-a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+            <marker id="L-4a-L-4a-a3" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#333"/></marker>
+          </defs>
+          <text x="20" y="22" font-size="13" fill="#666">из O</text>
+          <circle cx="40" cy="150" r="4" fill="#333"/>
+          <line x1="40" y1="150" x2="140" y2="150" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a1)"/>
+          <line x1="40" y1="150" x2="40" y2="60" stroke="#8a4b1f" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a2)"/>
+          <line x1="40" y1="150" x2="140" y2="60" stroke="#333" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a3)"/>
+          <text x="28" y="168" font-size="12">O</text>
+          <text x="85" y="168" font-size="12" fill="#1f5c4d">u</text>
+          <text x="48" y="100" font-size="12" fill="#8a4b1f">v</text>
+          <text x="100" y="95" font-size="12">u+v</text>
+
+          <text x="210" y="22" font-size="13" fill="#666">из A — тот же класс суммы</text>
+          <circle cx="230" cy="150" r="4" fill="#333"/>
+          <line x1="230" y1="150" x2="330" y2="150" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a1)"/>
+          <line x1="230" y1="150" x2="230" y2="60" stroke="#8a4b1f" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a2)"/>
+          <line x1="230" y1="150" x2="330" y2="60" stroke="#333" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a3)"/>
+          <text x="218" y="168" font-size="12">A</text>
+          <text x="275" y="168" font-size="12" fill="#1f5c4d">u</text>
+          <text x="238" y="100" font-size="12" fill="#8a4b1f">v</text>
+          <text x="290" y="95" font-size="12">u+v</text>
+        </svg>
+        <figcaption>Рис. L-4a · сумма свободных векторов: начало можно сменить — класс u+v тот же</figcaption>
+      </figure>
+</div>
+<h3
+<hr />
+<h1 id="сторона-l--лекции">Сторона L · Лекции</h1>
+<p><em>(Теория курса «Геометрия и топология». Не путать с задачами Цубербиллера на стороне П.)</em></p>
+<h2 id="l0-как-пользоваться-стороной-l">L0. Как пользоваться стороной L</h2>
+<p>Пишешь сюда то, что на <strong>лекции</strong>: определения, теоремы, доказательства, обозначения преподавателя.</p>
+<p>Порядок работы:</p>
+<ol>
+<li>Твои фото / текст <strong>или</strong> PDF из <a href="https://github.com/Begaliev-Kirill/SPBU/tree/master/Release/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F" target="_blank" rel="noopener">Release/Геометрия</a>.</li>
+<li>Разбор по понятиям + <strong>обязательный пример</strong> к каждому новому определению.</li>
+<li>Рисунки встроены в HTML рядом с текстом (номера вида L-1a, П-3a). Предпочтительно визуальный пример; очевидную арифметику — письменно, без огромного SVG.</li>
+</ol>
+<p>PDF Бегалиева по разобранным датам:</p>
+<ul>
+<li><a href="https://github.com/Begaliev-Kirill/SPBU/blob/master/Release/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F%2007.09.2026.pdf" target="_blank" rel="noopener">07.09.2026</a></li>
+<li><a href="https://github.com/Begaliev-Kirill/SPBU/blob/master/Release/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F%2014.09.2026.pdf" target="_blank" rel="noopener">14.09.2026</a></li>
+<li><a href="https://github.com/Begaliev-Kirill/SPBU/blob/master/Release/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F%2021.09.2026.pdf" target="_blank" rel="noopener">21.09.2026</a></li>
+<li><a href="https://github.com/Begaliev-Kirill/SPBU/blob/master/Release/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F%2028.09.2026.pdf" target="_blank" rel="noopener">28.09.2026</a></li>
+</ul>
+<p>Локальные выписки (архив): <code>материалы/_архив/_бегалиев-геометрия/</code> — <code>07.txt</code>, <code>14.txt</code>, <code>21.txt</code>, <code>28.txt</code> (+ PDF <code>28.pdf</code>).</p>
+<p><strong>Видео по теме</strong> (одно, для закрепления аксиом векторного пространства):   <a href="https://teach-in.ru/lecture/2022-02-07-Timashev-1" target="_blank" rel="noopener">Лекция 1. Векторные пространства · Тимашев, МГУ / teach-in</a>.</p>
+<hr />
+<h2 id="l1-0709--множества-операции-отображения">L1. 07.09 — множества, операции, отображения</h2>
+<p><em>(из записей Бегалиева · лекция Антоника; дополнено примерами и пояснениями)</em></p>
+<p>Зачем этот блок на геометрии: дальше появятся «пространства точек», «пространства векторов», отображения между ними. Язык множеств — общий словарь.</p>
+<h3 id="множество-и-принадлежность">Множество и принадлежность</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> Множество — неупорядоченная совокупность <strong>различимых</strong> элементов, выделенных по определённому признаку.   Запись <code>a ∈ A</code> — «a принадлежит A»; <code>a ∉ A</code> — «не принадлежит». Пустое множество ∅ не содержит ни одного элемента; |∅| = 0. Универсум U — «большое» множество, внутри которого в данной задаче живут все рассматриваемые множества (ограничивает область рассуждений).</p>
+<p><em>Своими словами.</em> Множество — мешок объектов без порядка и без дублей: <code>{a, b}</code> и <code>{b, a}</code> — одно и то же; если a = b, то <code>{a, b} = {a}</code>.</p>
+<p><strong>Пример.</strong> A = {1, 2, 3}. Тогда 2 ∈ A, 5 ∉ A.   <strong>Не-пример.</strong> «Список» (1, 2, 2) — не множество в этом смысле: порядок и повторы важны для кортежа, а не для множества.</p>
+<p>Способы задать множество <em>(из записей)</em>:</p>
+<ol>
+<li>перечислением: <code>{a, b, c}</code>;</li>
+<li>условием: <code>{a ∈ ℕ : a mod 3 = 0}</code> = {3, 6, 9, …};</li>
+<li>«интуитивно» (на лекции — как рабочий приём, когда формализация не нужна сразу);</li>
+<li>через операции с уже известными множествами.</li>
+</ol>
+<p>Частые обозначения <em>(из записей)</em>: ℕ — натуральные; ℤ — целые; ℚ — рациональные; ℝ — вещественные; I = ℝ ∖ ℚ — иррациональные; ℂ — комплексные. (На курсе дальше чаще всего поле скаляров — ℝ, иногда ℂ.)</p>
+<h3 id="операции-и-де-морган">Операции и Де Морган</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> Для множеств X, Y ⊆ U:</p>
+<ul>
+<li>объединение: X ∪ Y = {a : a ∈ X <strong>или</strong> a ∈ Y};</li>
+<li>пересечение: X ∩ Y = {a : a ∈ X <strong>и</strong> a ∈ Y};</li>
+<li>разность: X ∖ Y = {a : a ∈ X <strong>и</strong> a ∉ Y};</li>
+<li>дополнение: <span class="cm">X̅</span> = {a ∈ U : a ∉ X} (иногда пишут U ∖ X);</li>
+<li>симметрическая разность: X △ Y = (X ∖ Y) ∪ (Y ∖ X).</li>
+</ul>
+<p><em>Своими словами.</em> ∪ — «всё, что хоть где-то есть»; ∩ — «общее»; ∖ — «из первого выкинуть второе»; △ — «ровно в одном из двух».</p>
+<p><strong>Пример.</strong> Пусть U = {1, 2, 3, 4, 5}, A = {1, 2, 3}, B = {3, 4}.   Тогда A ∪ B = {1, 2, 3, 4}, A ∩ B = {3}, A ∖ B = {1, 2}, A △ B = {1, 2, 4}, <span class="cm">A̅</span> = {4, 5}.   <em>(Рис. в HTML: L-1a–d — ∪ ∩ ∖ △; L-1e — A×B; L-1f–g — отображение / не-отображение.)</em></p>
+<div class="figs two">
+<figure class="fig">
+          <svg viewBox="0 0 280 160" width="280" height="160" aria-label="Объединение">
+            <rect x="8" y="8" width="264" height="144" fill="none" stroke="#ccc" stroke-dasharray="3 2"/>
+            <circle cx="110" cy="80" r="48" fill="#1f5c4d33" stroke="#1f5c4d" stroke-width="2"/>
+            <circle cx="160" cy="80" r="48" fill="#1f5c4d33" stroke="#8a4b1f" stroke-width="2"/>
+            <text x="20" y="28" font-size="12" fill="#666">U</text>
+            <text x="140" y="150" text-anchor="middle" font-size="13">A ∪ B</text>
+          </svg>
+          <figcaption>Рис. L-1a · объединение — всё закрашенное</figcaption>
+        </figure>
+<figure class="fig">
+          <svg viewBox="0 0 280 160" width="280" height="160" aria-label="Пересечение">
+            <rect x="8" y="8" width="264" height="144" fill="none" stroke="#ccc" stroke-dasharray="3 2"/>
+            <circle cx="110" cy="80" r="48" fill="none" stroke="#1f5c4d" stroke-width="2"/>
+            <circle cx="160" cy="80" r="48" fill="none" stroke="#8a4b1f" stroke-width="2"/>
+            <path d="M135 45 A48 48 0 0 1 135 115 A48 48 0 0 1 135 45" fill="#1f5c4d55"/>
+            <text x="140" y="150" text-anchor="middle" font-size="13">A ∩ B</text>
+          </svg>
+          <figcaption>Рис. L-1b · пересечение — только «линза»</figcaption>
+        </figure>
+<figure class="fig">
+          <svg viewBox="0 0 280 160" width="280" height="160" aria-label="Разность">
+            <rect x="8" y="8" width="264" height="144" fill="none" stroke="#ccc" stroke-dasharray="3 2"/>
+            <circle cx="110" cy="80" r="48" fill="#1f5c4d44" stroke="#1f5c4d" stroke-width="2"/>
+            <circle cx="160" cy="80" r="48" fill="#faf9f6" stroke="#8a4b1f" stroke-width="2"/>
+            <text x="140" y="150" text-anchor="middle" font-size="13">A ∖ B</text>
+          </svg>
+          <figcaption>Рис. L-1c · разность — из A вырезали кусок B</figcaption>
+        </figure>
+<figure class="fig">
+          <svg viewBox="0 0 280 160" width="280" height="160" aria-label="Симметрическая разность">
+            <rect x="8" y="8" width="264" height="144" fill="none" stroke="#ccc" stroke-dasharray="3 2"/>
+            <circle cx="110" cy="80" r="48" fill="#8a4b1f33" stroke="#1f5c4d" stroke-width="2"/>
+            <circle cx="160" cy="80" r="48" fill="#8a4b1f33" stroke="#8a4b1f" stroke-width="2"/>
+            <path d="M135 45 A48 48 0 0 1 135 115 A48 48 0 0 1 135 45" fill="#faf9f6"/>
+            <text x="140" y="150" text-anchor="middle" font-size="13">A △ B</text>
+          </svg>
+          <figcaption>Рис. L-1d · симм. разность — «или-или», без пересечения</figcaption>
+        </figure>
+<figure class="fig">
+          <svg viewBox="0 0 260 150" width="260" height="150" aria-label="Функция">
+            <text x="130" y="20" text-anchor="middle" font-size="13" fill="#1f5c4d">отображение ✓</text>
+            <circle cx="50" cy="55" r="10" fill="#1f5c4d"/>
+            <circle cx="50" cy="95" r="10" fill="#1f5c4d"/>
+            <circle cx="50" cy="135" r="10" fill="#1f5c4d"/>
+            <circle cx="200" cy="55" r="10" fill="#8a4b1f"/>
+            <circle cx="200" cy="110" r="10" fill="#8a4b1f"/>
+            <line x1="60" y1="55" x2="190" y2="55" stroke="#333" stroke-width="1.5" marker-end="url(#L-1f-L-1f-mArr)"/>
+            <line x1="60" y1="95" x2="190" y2="110" stroke="#333" stroke-width="1.5"/>
+            <line x1="60" y1="135" x2="190" y2="110" stroke="#333" stroke-width="1.5"/>
+            <text x="30" y="58" font-size="11">1</text>
+            <text x="30" y="98" font-size="11">2</text>
+            <text x="30" y="138" font-size="11">3</text>
+            <text x="215" y="58" font-size="11">a</text>
+            <text x="215" y="113" font-size="11">b</text>
+            <text x="50" y="40" text-anchor="middle" font-size="11" fill="#666">A</text>
+            <text x="200" y="40" text-anchor="middle" font-size="11" fill="#666">B</text>
+          </svg>
+          <figcaption>Рис. L-1f · из каждой точки A ровно одна стрелка</figcaption>
+        </figure>
+<figure class="fig">
+          <svg viewBox="0 0 260 150" width="260" height="150" aria-label="Не функция">
+            <text x="130" y="20" text-anchor="middle" font-size="13" fill="#a33">не отображение ✗</text>
+            <circle cx="50" cy="80" r="10" fill="#1f5c4d"/>
+            <circle cx="200" cy="50" r="10" fill="#8a4b1f"/>
+            <circle cx="200" cy="110" r="10" fill="#8a4b1f"/>
+            <line x1="60" y1="80" x2="190" y2="50" stroke="#a33" stroke-width="1.5"/>
+            <line x1="60" y1="80" x2="190" y2="110" stroke="#a33" stroke-width="1.5"/>
+            <text x="30" y="84" font-size="11">1</text>
+            <text x="215" y="53" font-size="11">a</text>
+            <text x="215" y="113" font-size="11">b</text>
+          </svg>
+          <figcaption>Рис. L-1g · одной точке два значения — уже не функция</figcaption>
+        </figure>
+<figure class="fig">
+        <svg viewBox="0 0 320 200" width="320" height="200" aria-label="A × B как сетка точек">
+          <text x="40" y="28" font-size="13">A = {1,2} · B = {x,y}</text>
+          <!-- axes -->
+          <line x1="50" y1="170" x2="280" y2="170" stroke="#999"/>
+          <line x1="50" y1="170" x2="50" y2="40" stroke="#999"/>
+          <text x="120" y="188" font-size="12">1</text>
+          <text x="200" y="188" font-size="12">2</text>
+          <text x="28" y="120" font-size="12">y</text>
+          <text x="28" y="70" font-size="12">x</text>
+          <circle cx="120" cy="70" r="6" fill="#1f5c4d"/>
+          <circle cx="120" cy="120" r="6" fill="#1f5c4d"/>
+          <circle cx="200" cy="70" r="6" fill="#1f5c4d"/>
+          <circle cx="200" cy="120" r="6" fill="#1f5c4d"/>
+          <text x="130" y="66" font-size="11">(1,x)</text>
+          <text x="130" y="116" font-size="11">(1,y)</text>
+          <text x="210" y="66" font-size="11">(2,x)</text>
+          <text x="210" y="116" font-size="11">(2,y)</text>
+        </svg>
+        <figcaption>Рис. L-1e · A × B — четыре упорядоченные пары (как точки на «решётке»)</figcaption>
+      </figure>
+</div>
+<p>Объединение, пересечение и △ <strong>коммутативны и ассоциативны</strong> <em>(из записей)</em>.</p>
+<p><strong>Формулы Де Моргана</strong> <em>(из записей)</em>:</p>
+<p><span class="ovl">(A ∪ B)</span> = <span class="cm">A̅</span> ∩ <span class="cm">B̅</span>,   <span class="ovl">(A ∩ B)</span> = <span class="cm">A̅</span> ∪ <span class="cm">B̅</span>.</p>
+<p>Для семейства:   <span class="ovl">(⋃_{i∈I} A_i)</span> = ⋂_{i∈I} <span class="cm">A̅</span>_i,   <span class="ovl">(⋂_{i∈I} A_i)</span> = ⋃_{i∈I} <span class="cm">A̅</span>_i.</p>
+<p><em>Своими словами.</em> «Не (A или B)» = «не A и не B». «Не (A и B)» = «не A или не B».</p>
+<p><strong>Пример.</strong> A = {1, 2}, B = {2, 3}, U = {1, 2, 3, 4}.   <span class="ovl">(A ∪ B)</span> = <span class="ovl">{1, 2, 3}</span> = {4}; <span class="cm">A̅</span> ∩ <span class="cm">B̅</span> = {3, 4} ∩ {1, 4} = {4}. Совпало.</p>
+<h3 id="декартово-произведение">Декартово произведение</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> A × B = {(a, b) : a ∈ A, b ∈ B} — множество всех <strong>упорядоченных</strong> пар. Кортеж (a₁, a₂, …, aₙ) — упорядоченный набор; порядок важен: (a, b) ≠ (b, a), если a ≠ b.</p>
+<p><em>Своими словами.</em> Произведение — «все комбинации: взяли по одному элементу из каждого множества и записали в ряд».</p>
+<p><strong>Пример.</strong> A = {1, 2}, B = {x, y}.   A × B = {(1, x), (1, y), (2, x), (2, y)} — четыре пары. <em>(Рис. L-1e.)</em>   <strong>Не-пример.</strong> {1, 2} × {1, 2} ≠ квадрат на плоскости сам по себе: это множество пар чисел; геометрическая картинка — уже интерпретация.</p>
+<h3 id="подмножества-и-булеан">Подмножества и булеан</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> X ⊆ Y (часто на доске ⊂), если ∀x ∈ X выполняется x ∈ Y. Собственное подмножество X ⫋ Y — если X ⊆ Y и ∃ y ∈ Y с y ∉ X. (У разных преподавателей ⊂ может означать и ⊆, и ⫋ — смотри контекст лектора.)</p>
+<p>Свойства <em>(из записей)</em>:</p>
+<ul>
+<li>∀A: ∅ ⊆ A (в том числе ∅ ⊆ ∅);</li>
+<li>A = B ⟺ (A ⊆ B и B ⊆ A);</li>
+<li>A ⊆ B ⇒ |A| ≤ |B| (для конечных — очевидно по смыслу).</li>
+</ul>
+<p><em>Своими словами.</em> Подмножество — «все элементы первого лежат во втором». Равенство множеств проверяют двумя включениями.</p>
+<p><strong>Пример.</strong> {1, 2} ⊆ {1, 2, 3}; {1, 2} ⫋ {1, 2, 3}.   <strong>Не-пример.</strong> {1, 4} ⊈ {1, 2, 3}, потому что 4 не лежит во втором.</p>
+<p><strong>Определение.</strong> <em>(из записей)</em> Множество всех подмножеств A называют булеаном и пишут 2^A (или 𝒫(A)):   2^A = {B : B ⊆ A}.   Для конечного A верно |2^A| = 2^{|A|} <em>(на лекции доказательство не давали)</em>.</p>
+<p><strong>Пример.</strong> A = {1, 2, 3}. Тогда   2^A = {∅, {1}, {2}, {3}, {1, 2}, {1, 3}, {2, 3}, {1, 2, 3}} — 8 = 2³ штук.</p>
+<h3 id="соответствия-и-отображения">Соответствия и отображения</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> Соответствие C = (A, B, Γ), где Γ ⊆ A × B. Пишут a C b, если (a, b) ∈ Γ.</p>
+<p>Соответствие f = (A, B, R) называют <strong>отображением</strong> (функцией) f : A → B, если   ∀ a ∈ A существует <strong>ровно один</strong> b ∈ B такой, что (a, b) ∈ R   (эквивалентно: если a f b и a f c, то b = c, и для каждого a такой b есть).</p>
+<p>Обозначения: f(a) = b; область определения — A; область значений / образ множества — f(A₀) и т.п.</p>
+<p><strong>Образ и прообраз</strong> <em>(из записей)</em>:</p>
+<ul>
+<li>образ множества A₀ ⊆ A: {b ∈ B : ∃ a ∈ A₀ с f(a) = b};</li>
+<li>прообраз множества B₀ ⊆ B: {a ∈ A : ∃ b ∈ B₀ с f(a) = b} = {a ∈ A : f(a) ∈ B₀}.</li>
+</ul>
+<p><em>Своими словами.</em> Функция — правило, которое каждому элементу из A сопоставляет <strong>один</strong> результат в B. Образ — «куда попали»; прообраз — «кто попал в выбранную цель».</p>
+<p><strong>Пример.</strong> f : ℝ → ℝ, f(x) = x².   f({−2, 2}) = {4}; прообраз {4} — это {−2, 2}. <em>(Рис. L-1f–g.)</em>   <strong>Не-пример соответствия-отображения.</strong> Γ = {(1, a), (1, b)} при a ≠ b — одному 1 соответствуют два значения: это не функция.</p>
+<p>На этой же лекции <em>(из записей)</em> уже ввели четвёрку (V, K, +, ·) и восемь аксиом векторного пространства — их подробно разбираем в L2 (на 14.09 аксиомы повторили).</p>
+<hr />
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест ГЛ-L1</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2 id="l2-1409--векторные-пространства">L2. 14.09 — векторные пространства</h2>
+<p><em>(из записей Бегалиева; доказательства следствий — из записей + дополнено развёрткой; примеры — из записей)</em></p>
+<h3 id="аксиомы-векторного-пространства">Аксиомы векторного пространства</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> Пусть V — множество («векторы»), K — поле (чаще ℝ или ℂ),   + : V × V → V, (u, v) ↦ u + v,   · : K × V → V, (λ, v) ↦ λv.  </p>
+<p>Упорядоченная четвёрка (V, K, +, ·) называется <strong>векторным пространством</strong>, если выполнены аксиомы:</p>
+<ol>
+<li>∀ u, v ∈ V: u + v = v + u <em>(коммутативность сложения)</em>;</li>
+<li>∀ u, v, w ∈ V: (u + v) + w = u + (v + w) <em>(ассоциативность)</em>;</li>
+<li>∃ <span class="cm">0̃</span> ∈ V: ∀ u ∈ V: u + <span class="cm">0̃</span> = u <em>(нулевой вектор; на доске часто пишут просто 0 — не путать со скаляром 0 ∈ K)</em>;</li>
+<li>∀ u ∈ V ∃ (−u) ∈ V: u + (−u) = <span class="cm">0̃</span> <em>(противоположный)</em>;</li>
+<li>∀ λ ∈ K ∀ u, v ∈ V: λ(u + v) = λu + λv;</li>
+<li>∀ λ, μ ∈ K ∀ u ∈ V: (λ + μ)u = λu + μu;</li>
+<li>∃ 1 ∈ K: ∀ u ∈ V: 1 · u = u;</li>
+<li>∀ λ, μ ∈ K ∀ u ∈ V: (λμ)u = λ(μu).</li>
+</ol>
+<p><em>Своими словами.</em> Векторы можно складывать между собой и растягивать числами из поля, и эти две операции ведут себя «как привычные стрелки на плоскости»: сложение коммутативно и ассоциативно, есть ноль и «минус вектор», растяжение распределяется по сумме.</p>
+<p><strong>Замечание.</strong> <em>(из записей)</em> Аксиомы 1–4 — это аксиомы <strong>абелевой (коммутативной) группы</strong> по сложению.</p>
+<p><strong>Пример.</strong> V = ℝ², K = ℝ:   (x₁, y₁) + (x₂, y₂) = (x₁+x₂, y₁+y₂), λ(x, y) = (λx, λy).   Нуль — (0, 0); −(x, y) = (−x, −y). Это «школьные» векторы на плоскости в координатах.   <em>(Рис. L-2c — стрелки из начала; L-2a–b — сумма и растяжение.)</em></p>
+<div class="figs two">
+<figure class="fig">
+        <svg viewBox="0 0 360 220" width="360" height="220" aria-label="Параллелограмм">
+          <defs>
+            <marker id="L-2a-L-2a-a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-2a-L-2a-a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+            <marker id="L-2a-L-2a-a3" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#333"/></marker>
+          </defs>
+          <line x1="40" y1="180" x2="160" y2="120" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-2a-L-2a-a1)"/>
+          <line x1="40" y1="180" x2="200" y2="180" stroke="#8a4b1f" stroke-width="2.5" marker-end="url(#L-2a-L-2a-a2)"/>
+          <line x1="160" y1="120" x2="320" y2="120" stroke="#8a4b1f" stroke-width="1.4" stroke-dasharray="5 4"/>
+          <line x1="200" y1="180" x2="320" y2="120" stroke="#1f5c4d" stroke-width="1.4" stroke-dasharray="5 4"/>
+          <line x1="40" y1="180" x2="320" y2="120" stroke="#333" stroke-width="2.5" marker-end="url(#L-2a-L-2a-a3)"/>
+          <circle cx="40" cy="180" r="4" fill="#333"/>
+          <text x="28" y="198" font-size="13">O</text>
+          <text x="90" y="140" font-size="13" fill="#1f5c4d">u</text>
+          <text x="110" y="200" font-size="13" fill="#8a4b1f">v</text>
+          <text x="200" y="140" font-size="13">u+v</text>
+        </svg>
+        <figcaption>Рис. L-2a · u + v — диагональ параллелограмма</figcaption>
+      </figure>
+<figure class="fig">
+        <svg viewBox="0 0 360 150" width="360" height="150" aria-label="Скаляр">
+          <defs>
+            <marker id="L-2b-L-2b-b1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-2b-L-2b-b2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+            <marker id="L-2b-L-2b-b3" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#a33"/></marker>
+          </defs>
+          <circle cx="140" cy="45" r="3" fill="#333"/>
+          <line x1="140" y1="45" x2="220" y2="45" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-2b-L-2b-b1)"/>
+          <line x1="140" y1="45" x2="300" y2="45" stroke="#8a4b1f" stroke-width="2" marker-end="url(#L-2b-L-2b-b2)"/>
+          <text x="175" y="38" font-size="12" fill="#1f5c4d">v</text>
+          <text x="250" y="38" font-size="12" fill="#8a4b1f">2·v</text>
+
+          <circle cx="140" cy="110" r="3" fill="#333"/>
+          <line x1="140" y1="110" x2="220" y2="110" stroke="#1f5c4d" stroke-width="2" marker-end="url(#L-2b-L-2b-b1)"/>
+          <line x1="140" y1="110" x2="60" y2="110" stroke="#a33" stroke-width="2.5" marker-end="url(#L-2b-L-2b-b3)"/>
+          <text x="175" y="103" font-size="12" fill="#1f5c4d">v</text>
+          <text x="70" y="103" font-size="12" fill="#a33">(−1)·v</text>
+        </svg>
+        <figcaption>Рис. L-2b · растяжение 2·v (тот же луч) и разворот (−1)·v</figcaption>
+      </figure>
+<figure class="fig">
+        <svg viewBox="0 0 280 220" width="280" height="220" aria-label="R2">
+          <defs>
+            <marker id="L-2c-L-2c-a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-2c-L-2c-a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+          </defs>
+          <line x1="40" y1="180" x2="250" y2="180" stroke="#bbb"/>
+          <line x1="40" y1="180" x2="40" y2="30" stroke="#bbb"/>
+          <line x1="40" y1="180" x2="160" y2="100" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-2c-L-2c-a1)"/>
+          <line x1="40" y1="180" x2="100" y2="60" stroke="#8a4b1f" stroke-width="2.5" marker-end="url(#L-2c-L-2c-a2)"/>
+          <text x="150" y="100" font-size="12" fill="#1f5c4d">(3,2)</text>
+          <text x="105" y="55" font-size="12" fill="#8a4b1f">(1.5,3)</text>
+          <text x="245" y="195" font-size="12">x₁</text>
+          <text x="20" y="40" font-size="12">x₂</text>
+          <text x="48" y="195" font-size="12">O</text>
+          <text x="90" y="205" font-size="12" fill="#666">ℝ²: ровно 2 числа</text>
+        </svg>
+        <figcaption>Рис. L-2c · вектор из ℝ² = пара (x₁, x₂); рисуем стрелку из начала</figcaption>
+      </figure>
+</div>
+<p><strong>Не-пример.</strong> Множество точек окружности со «сложением» как обычные векторы из начала координат: сумма двух точек окружности часто не лежит на окружности — замкнутость не выполняется, это не подпространство ℝ².</p>
+<p>Полную проверку всех восьми аксиом для каждого примера на лекции часто оставляли упражнением; ниже — следствия и типичные примеры без восьми однотипных проверок подряд.</p>
+<h3 id="следствия-аксиом">Следствия аксиом</h3>
+<p><em>(формулировки — из записей; ниже — 2 развёрнутых доказательства как образец, остальные — утверждения)</em></p>
+<p>На лекции нулевой вектор обозначали <span class="cm">0̃</span> (чтобы не путать со скаляром 0).</p>
+<p><strong>Утверждение 1.</strong> Нулевой вектор единственен: ∃! <span class="cm">0̃</span> ∈ V.</p>
+<p><strong>Доказательство (образец).</strong> <em>(из записей, развёрнуто)</em> Пусть <span class="cm">0̃</span> и <span class="cm">0̃</span>′ — два нуля. Тогда   <span class="cm">0̃</span> = <span class="cm">0̃</span> + <span class="cm">0̃</span>′ <em>(потому что <span class="cm">0̃</span>′ — ноль)</em>   = <span class="cm">0̃</span>′ + <span class="cm">0̃</span> <em>(коммутативность)</em>   = <span class="cm">0̃</span>′ <em>(потому что <span class="cm">0̃</span> — ноль)</em>.   Значит <span class="cm">0̃</span> = <span class="cm">0̃</span>′. ∎</p>
+<p><strong>Утверждение 2.</strong> Для каждого v ∈ V противоположный −v единственен.</p>
+<p><strong>Доказательство (образец).</strong> <em>(из записей, развёрнуто)</em> Пусть v + <span class="cm">v̄</span> = <span class="cm">0̃</span> и v + <span class="cm">v̄</span>′ = <span class="cm">0̃</span>. Тогда   <span class="cm">v̄</span> = <span class="cm">v̄</span> + <span class="cm">0̃</span> = <span class="cm">v̄</span> + (v + <span class="cm">v̄</span>′) = (<span class="cm">v̄</span> + v) + <span class="cm">v̄</span>′ = <span class="cm">0̃</span> + <span class="cm">v̄</span>′ = <span class="cm">v̄</span>′. ∎</p>
+<p><strong>Утверждение 3.</strong> ∀ v ∈ V: 0 · v = <span class="cm">0̃</span>.   <em>(доказательство на лекции: 0·v = (0+0)·v = 0·v + 0·v ⇒ после прибавления −(0·v) получаем <span class="cm">0̃</span> = 0·v.)</em></p>
+<p><strong>Утверждение 4.</strong> ∀ α ∈ K: α · <span class="cm">0̃</span> = <span class="cm">0̃</span>.   <em>(упражнение на лекции; идея та же: α·<span class="cm">0̃</span> = α(<span class="cm">0̃</span>+<span class="cm">0̃</span>) = α·<span class="cm">0̃</span> + α·<span class="cm">0̃</span>.)</em></p>
+<p><strong>Утверждение 5.</strong> Если α · v = <span class="cm">0̃</span>, то α = 0 или v = <span class="cm">0̃</span>.   <em>(из записей: если α ≠ 0, умножаем на α⁻¹ и получаем v = <span class="cm">0̃</span>.)</em></p>
+<p><strong>Утверждение 6.</strong> ∀ v ∈ V: (−1) · v = −v.   <em>(из записей: (−1)·v + v = (−1+1)·v = 0·v = <span class="cm">0̃</span> ⇒ (−1)·v — противоположный к v.)</em></p>
+<p><em>Своими словами.</em> Из аксиом уже следует привычное: «ноль один», «минус один», «ноль раз вектор — ноль», и произведение ноль только если ноль скаляр или ноль вектор.</p>
+<p><strong>Пример к следствиям.</strong> В ℝ²: 0·(3, −1) = (0, 0); (−1)·(3, −1) = (−3, 1) = −(3, −1).</p>
+<h3 id="примеры-векторных-пространств">Примеры векторных пространств</h3>
+<p>#### (1) ℝⁿ</p>
+<p><strong>Определение / конструкция.</strong> <em>(из записей)</em>   ℝⁿ = {(x₁, …, xₙ) : xᵢ ∈ ℝ}.   Сложение и умножение на α ∈ ℝ — <strong>покомпонентно</strong>. Можно думать про ℝⁿ как про множество отображений {1, …, n} → ℝ.</p>
+<p><em>Своими словами.</em> Столбец из <strong>n</strong> вещественных чисел; буква n — сколько координат у одного вектора. Складываем и растягиваем «по строчкам».</p>
+<p><em>(Рис. L-2d — схема ℝ¹ / ℝ² / ℝ³; рис. L-2c — как выглядит вектор из ℝ² на плоскости.)</em></p>
+<figure class="fig">
+        <svg viewBox="0 0 360 120" width="360" height="120" aria-label="Rn схема">
+          <rect x="20" y="30" width="90" height="60" rx="6" fill="#1f5c4d18" stroke="#1f5c4d"/>
+          <text x="35" y="55" font-size="14" fill="#1f5c4d">ℝ¹</text>
+          <text x="30" y="75" font-size="12">(x₁)</text>
+          <rect x="130" y="30" width="90" height="60" rx="6" fill="#8a4b1f18" stroke="#8a4b1f"/>
+          <text x="145" y="55" font-size="14" fill="#8a4b1f">ℝ²</text>
+          <text x="132" y="75" font-size="12">(x₁, x₂)</text>
+          <rect x="240" y="30" width="100" height="60" rx="6" fill="#33333312" stroke="#333"/>
+          <text x="255" y="55" font-size="14">ℝ³</text>
+          <text x="245" y="75" font-size="12">(x₁,x₂,x₃)</text>
+        </svg>
+        <figcaption>Рис. L-2d · буква n в ℝⁿ — сколько чисел в одном векторе</figcaption>
+      </figure>
+<p><strong>Пример (письменно; 3D не рисуем).</strong> В ℝ³ у вектора ровно три числа:   (1, 0, 2) + (−1, 4, 0) = (0, 4, 2);   3·(1, 0, 2) = (3, 0, 6).   Это та же покомпонентная арифметика, что в ℝ², только координат три.</p>
+<p>#### (2) Пространство отображений A → V</p>
+<p><strong>Определение.</strong> <em>(из записей)</em> Пусть V — векторное пространство над K, A — любое множество.   W = {f : f : A → V}.   Операции: (f + g)(a) = f(a) + g(a), (λf)(a) = λ f(a).</p>
+<p><em>Своими словами.</em> «Функции со значениями в векторах» складываются так же, как значения в каждой точке.</p>
+<p><strong>Пример.</strong> A = {утро, вечер}, V = ℝ. Тогда f и g — просто пары чисел (значение утром и вечером); сложение — сложение пар. Это по сути ℝ².</p>
+<p><em>Разжёвка.</em> A и ℝ — разные вещи: A — <strong>где</strong> смотрим (два слота: утро / вечер), ℝ — <strong>какие числа</strong> кладём. Одно отображение f задаёт ровно два числа: f(утро) и f(вечер) — как вектор из ℝ². Складывать функции = складывать эти пары покомпонентно.</p>
+<p><strong>Не-пример путаницы.</strong> «A и значения — два объекта, значит не ℝ²» — нет: вектор как раз и есть набор значений по слотам A. Слотов два ⇒ ℝ².</p>
+<p>#### (3) Геометрическое пространство V_Q из евклидова пространства</p>
+<p><em>(из записей)</em> Сами E¹ (прямая), E² (плоскость), E³ (пространство) как множества <strong>точек</strong> векторными пространствами не являются. Их «достраивают».</p>
+<p><em>Почему точек мало.</em> В векторном пространстве нужно уметь <strong>складывать</strong> элементы и <strong>растягивать</strong> скаляром. Для двух точек плоскости «A + B» само по себе не определено: куда указывает сумма? Пока нет стрелок и выбранного начала — одних точек недостаточно. Поэтому ответ на «E² — векторное пространство?» — <strong>нет</strong>.</p>
+<p>Фиксируем точку Q ∈ Eₘ (m = 1, 2, 3). Положим   V_Q := {[QX] : X ∈ Eₘ},   где [QX] — направленный отрезок (вектор) из Q в X. Ноль: [QQ].   Сложение — по правилу параллелограмма / треугольника; умножение на скаляр — растяжение/сжатие (и разворот при отрицательном α).</p>
+<p><em>Своими словами.</em> Выбрали «начало» Q и смотрим на все <strong>стрелки</strong>, начинающиеся в Q. Это уже векторы, а не «голые» точки. «Не соединены» = ещё нет стрелок — тогда векторного пространства нет.</p>
+<p><strong>Пример.</strong> На плоскости E² возьмём Q — начало координат. Тогда [QX] — обычный радиус-вектор точки X; V_Q выглядит как ℝ².</p>
+<p>Коммутативность сложения видна на параллелограмме; ассоциативность на лекции 21.09 поясняли чертежом (на экзамене, по записи, могут не требовать строгого доказательства). <em>(Рис. L-2a — сумма; L-2b — скаляр; L-2c — ℝ².)</em></p>
+<p>Параллельный перенос точки вдоль вектора — биекция плоскости/пространства на себя <em>(из записей, упражнение)</em>.</p>
+<h3 id="линейные-отображения-и-изоморфизм">Линейные отображения и изоморфизм</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> Пусть U, V — векторные пространства над одним полем K. Отображение Φ : U → V <strong>линейно</strong>, если</p>
+<ol>
+<li>Φ(u + v) = Φ(u) + Φ(v) <em>(аддитивность)</em>;</li>
+<li>Φ(ku) = k Φ(u) <em>(однородность)</em>.</li>
+</ol>
+<div class="formula-box" role="note">
+  <div class="formula-box-label">Линейность</div>
+  <div class="formula-box-body">Φ(u + αv) = Φ(u) + α Φ(v)</div>
+</div>
+<p><em>Частая путаница.</em> Однородность — это <strong>Φ(k u) = k · Φ(u)</strong>: сначала растянули вектор u на число k, потом применили Φ — то же, что сначала Φ(u), потом растянуть картинку на то же k. Писать «(Φk)u» нельзя: Φ действует на <strong>векторы</strong> из U, а k — скаляр из поля K, не вектор. Φ к числу k не применяется.</p>
+<p><strong>Пример.</strong> Φ(x, y) = (2x, 2y), u = (1, 3), k = 4.   Слева: Φ(4u) = Φ(4, 12) = (8, 24).   Справа: 4·Φ(u) = 4·(2, 6) = (8, 24). Совпало.   «(Φ·4)·u» смысла не имеет: 4 не лежит в ℝ².</p>
+<p><strong>Изоморфизм</strong> — биективное линейное отображение U → V.   <em>(из записей)</em> Если Φ — изоморфизм, то Φ⁻¹ тоже изоморфизм (упражнение на лекции; идея: биекция очевидна наличием обратного; линейность обратного проверяют, применяя Φ к нужным равенствам).</p>
+<p><em>Своими словами.</em> Линейное отображение «уважает» сложение и растяжение: картинка суммы = сумма картинок. Изоморфизм — «это по сути одно и то же пространство, только назвали элементы иначе».</p>
+<p><strong>Пример.</strong> Φ : ℝ² → ℝ², Φ(x, y) = (2x, 2y) — линейно (растяжение в 2 раза), биективно ⇒ изоморфизм.   <strong>Не-пример.</strong> Ψ(x, y) = (x², y) — не линейно: Ψ((1,0)+(1,0)) = Ψ(2,0) = (4, 0), а Ψ(1,0)+Ψ(1,0) = (1,0)+(1,0) = (2, 0).</p>
+<p><strong>Пример из геометрии.</strong> <em>(из записей, идея)</em> Пространства V_{Q₁} и V_{Q₂} в одном евклидовом пространстве изоморфны: вектор [Q₁X] переносится параллельно так, чтобы начало стало в Q₂. Обратное — перенос обратно. Это как раз «смена начала отсчёта не меняет геометрию векторов».</p>
+<hr />
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест ГЛ-L2</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2 id="l3-2109--аффинные-пространства">L3. 21.09 — аффинные пространства</h2>
+<p><em>(из записей Бегалиева; пояснения и примеры — дополнено)</em></p>
+<h3 id="аксиомы-аффинного-пространства">Аксиомы аффинного пространства</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> Тройка (A, V, ·), где A — множество <strong>точек</strong>, V — векторное пространство, а отображение A × A → V сопоставляет паре точек (X, Y) вектор XY ∈ V, называется <strong>аффинным пространством</strong> с ассоциированным V, если:</p>
+<div class="formula-box" role="note">
+  <div class="formula-box-label">Аксиомы аффинного пространства</div>
+  <div class="formula-box-body">
+    1) ∀ X ∈ A ∀ v ∈ V ∃! Y ∈ A: XY = v<br>
+    2) ∀ X, Y, Z ∈ A: XY + YZ = XZ
+  </div>
+</div>
+<p><em>(1) из любой точки можно единственным образом «отложить» любой вектор; (2) правило треугольника / замыкание ломаной.</em></p>
+<p><em>Своими словами.</em> Точки сами по себе не складываются. Но между двумя точками есть вектор «куда идти». Аксиома 1 говорит: «стоя в X и имея вектор v, ровно одна точка Y в конце стрелки». Аксиома 2: путь X→Y→Z даёт тот же суммарный вектор, что X→Z напрямую. <em>(Рис. L-3a–b; свободные векторы — L-3c.)</em></p>
+<p><em>Не путать.</em> Складывать можно <strong>векторы</strong> из V (элементы XY, YZ, …). Запись «X + Y» для двух точек из A <strong>не определена</strong>: точки — не векторы. Связь точек с векторами — через «стрелку» XY или через «отложить v из X» (аксиома 1), а не через сумму точек.</p>
+<p><strong>Не-пример.</strong> На плоскости взять точки O и A. Имеет смысл OA (вектор) и O + OA в смысле «отложить OA из O → точка A». Не имеет смысла «O + A» как сумма двух точек.</p>
+<div class="figs two">
+<figure class="fig">
+          <svg viewBox="0 0 260 150" width="260" height="150" aria-label="Отложить">
+            <defs><marker id="L-3a-L-3a-c1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker></defs>
+            <circle cx="50" cy="100" r="6" fill="#1f5c4d"/>
+            <circle cx="200" cy="50" r="6" fill="#8a4b1f"/>
+            <line x1="50" y1="100" x2="192" y2="54" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-3a-L-3a-c1)"/>
+            <text x="40" y="125" font-size="13">X</text>
+            <text x="205" y="48" font-size="13">Y</text>
+            <text x="110" y="65" font-size="13" fill="#1f5c4d">v = XY</text>
+          </svg>
+          <figcaption>Рис. L-3a · из X ровно одна точка Y с XY = v</figcaption>
+        </figure>
+<figure class="fig">
+          <svg viewBox="0 0 260 160" width="260" height="160" aria-label="Треугольник">
+            <defs>
+              <marker id="L-3b-L-3b-c2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+              <marker id="L-3b-L-3b-c3" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+              <marker id="L-3b-L-3b-c4" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#333"/></marker>
+            </defs>
+            <circle cx="40" cy="130" r="5" fill="#333"/>
+            <circle cx="140" cy="40" r="5" fill="#333"/>
+            <circle cx="220" cy="120" r="5" fill="#333"/>
+            <line x1="40" y1="130" x2="135" y2="48" stroke="#1f5c4d" stroke-width="2" marker-end="url(#L-3b-L-3b-c2)"/>
+            <line x1="140" y1="40" x2="212" y2="115" stroke="#8a4b1f" stroke-width="2" marker-end="url(#L-3b-L-3b-c3)"/>
+            <line x1="40" y1="130" x2="212" y2="120" stroke="#333" stroke-width="2" marker-end="url(#L-3b-L-3b-c4)"/>
+            <text x="30" y="148" font-size="13">X</text>
+            <text x="145" y="32" font-size="13">Y</text>
+            <text x="225" y="140" font-size="13">Z</text>
+            <text x="70" y="80" font-size="11" fill="#1f5c4d">XY</text>
+            <text x="175" y="70" font-size="11" fill="#8a4b1f">YZ</text>
+            <text x="110" y="140" font-size="11">XZ</text>
+          </svg>
+          <figcaption>Рис. L-3b · XY + YZ = XZ</figcaption>
+        </figure>
+<figure class="fig">
+        <svg viewBox="0 0 360 160" width="360" height="160" aria-label="Свободные векторы">
+          <defs><marker id="L-3c-L-3c-d1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker></defs>
+          <line x1="30" y1="50" x2="120" y2="50" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-3c-L-3c-d1)"/>
+          <line x1="160" y1="90" x2="250" y2="90" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-3c-L-3c-d1)"/>
+          <line x1="80" y1="130" x2="170" y2="130" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-3c-L-3c-d1)"/>
+          <text x="60" y="40" font-size="12">[AB⟩</text>
+          <text x="190" y="80" font-size="12">[CD⟩</text>
+          <text x="110" y="120" font-size="12">[EF⟩</text>
+          <text x="280" y="85" font-size="13" fill="#666">∼ один класс</text>
+          <text x="280" y="105" font-size="13" fill="#666">= один вектор</text>
+        </svg>
+        <figcaption>Рис. L-3c · параллельный перенос не меняет класс: все эти стрелки — «один» свободный вектор</figcaption>
+      </figure>
+</div>
+<p><strong>Пример.</strong> Обычная плоскость: A = E², V = «свободные векторы плоскости», XY — направленный отрезок от X к Y (как класс / как элемент V). Это интуиция, к которой лекция идёт через фактор (ниже).</p>
+<h3 id="следствия-xx--0-и-xy--yx">Следствия XX = 0 и −XY = YX</h3>
+<div class="formula-box" role="note">
+  <div class="formula-box-label">Следствия</div>
+  <div class="formula-box-body">XX = <span class="cm">0̃</span>  −XY = YX</div>
+</div>
+<p><strong>Утверждение.</strong> <em>(из записей)</em> ∀ X ∈ A: XX = <span class="cm">0̃</span>.</p>
+<p><strong>Доказательство.</strong> <em>(из записей, развёрнуто)</em> По аксиоме 1 для вектора v и точки X есть единственная Y с XY = v. В частности, для v = XX существует единственная точка — это X сам.   С другой стороны, XX + XX = XX <em>(аксиома 2 при Y = Z = X)</em>.   Но тогда XX + XX = XX = XX + <span class="cm">0̃</span> ⇒ (прибавив −XX) XX = <span class="cm">0̃</span>.   Иначе (короче, как в записи): для любого v = XY имеем v + XX = XY + XX = XY = v ⇒ XX действует как ноль ⇒ XX = <span class="cm">0̃</span>. ∎</p>
+<p><strong>Утверждение.</strong> <em>(из записей)</em> ∀ X, Y ∈ A: −XY = YX.</p>
+<p><strong>Доказательство.</strong> XY + YX = XX = <span class="cm">0̃</span> ⇒ YX — противоположный к XY. ∎</p>
+<p><em>Своими словами.</em> «Стрелка из точки в себя — ноль». «Обратный путь — минус вектор».</p>
+<p><strong>Пример.</strong> На числовой прямой A = ℝ как аффинное пространство над V = ℝ: XY := Y − X. Тогда XX = 0, −(Y−X) = X−Y = YX. Подходит.</p>
+<h3 id="примеры-аффинных-пространств">Примеры аффинных пространств</h3>
+<p><strong>Пример 1.</strong> <em>(из записей)</em> Само векторное пространство как аффинное:   (A, V) = (V, V), и для X, Y ∈ V полагаем XY := Y − X.   Проверка аксиом сводится к свойствам вычитания в V.</p>
+<p><strong>Пример 2.</strong> <em>(из записей)</em> Евклидовы Eₙ (n = 0…3) с векторами, построенными из направленных отрезков (см. следующий блок).</p>
+<h3 id="отношение-эквивалентности-и-фактор">Отношение эквивалентности и фактор</h3>
+<p>Зачем этот кусок на геометрии: свободный вектор — это <strong>класс</strong> равных (параллельно перенесённых) направленных отрезков.</p>
+<p><strong>Определение.</strong> <em>(из записей)</em> Бинарное отношение R ⊆ M × M: пишем x R y, если (x, y) ∈ R.</p>
+<p>Свойства:</p>
+<ol>
+<li>рефлексивность: ∀ a: a R a;</li>
+<li>симметричность: a R b ⇒ b R a;</li>
+<li>транзитивность: a R b и b R c ⇒ a R c.</li>
+</ol>
+<p><strong>Определение.</strong> Отношение эквивалентности ∼ — то, у которого есть все три свойства.   Класс [x]_R := {y ∈ M : x R y}.</p>
+<p>Свойства классов <em>(из записей)</em>:</p>
+<ul>
+<li>классы либо совпадают, либо не пересекаются;</li>
+<li>объединение всех классов = M  </li>
+</ul>
+<p>⇒ классы образуют <strong>разбиение</strong> M.   Множество классов — <strong>фактор-множество</strong> M / R.</p>
+<p><em>Своими словами.</em> Эквивалентность — «считаем некоторых разными объектами одинаковыми». Класс — «все, кого мы склеили вместе». Фактор — «новое множество, элементами которого являются эти кучки».</p>
+<p><strong>Пример.</strong> На ℤ: a ∼ b ⟺ a − b чётно. Классы: «чётные» и «нечётные». Фактор — два элемента.   <strong>Не-пример.</strong> Отношение a R b ⟺ a &lt; b на ℝ: не рефлексивно (a ≮ a) — не эквивалентность.</p>
+<p>Диагональ D = {(x, x) : x ∈ M} — отношение равенности «каждый только сам с собой»; фактор M/D биективен самому M <em>(из записей, без подробного доказательства)</em>.</p>
+<h3 id="направленные-отрезки--свободные-векторы">Направленные отрезки → свободные векторы</h3>
+<p><em>(из записей Бегалиева; идея конструкции)</em></p>
+<p>В Eₙ рассматривают <strong>направленный отрезок</strong> [XY⟩. Антоник задаёт его парой (X, [XY]), где X — начало, [XY] — «прокладываемый» отрезок/вектор из начала: зная начало и вектор, знаем направление и конец.</p>
+<p>M — множество всех направленных отрезков в Eₙ.</p>
+<p>Отношение ∼ на M: [XY⟩ ∼ [WZ⟩, если [WZ] получается из [XY] <strong>параллельным переносом</strong>, переводящим X в W (длина и направление сохраняются).</p>
+<p>Класс [[XY⟩]_∼ обозначают как свободный вектор XY (начало больше не важно — важны длина и направление).</p>
+<p>V = { XY : X, Y ∈ Eₙ } — множество таких классов. Можно зафиксировать начало (удобно «нулевое») и отождествить классы с векторами вида [QX] из конструкции V_Q лекции 14.09.</p>
+<p><em>Своими словами.</em> Много стрелок на плоскости «одинаковой длины и направления, но из разных точек» — это <strong>один</strong> свободный вектор. Операции на классах задают через представителя: сложили/растянули отрезки с общим началом — получили новый класс. Линейность операций «очевидна раскрытием» <em>(формулировка из записей)</em>. Тогда (Eₙ, V, (X,Y) ↦ XY) — аффинное пространство.</p>
+<p><strong>Пример.</strong> Стрелка из (0,0) в (2,1) и стрелка из (3,3) в (5,4) — один и тот же свободный вектор (2, 1): вторая получается переносом первой на (3, 3).</p>
+<p>Дальше на курсе эту конструкцию используют как мост: «геометрические стрелки» ↔ «элементы абстрактного V». Продолжение и доказательства — лекция <strong>L4 (28.09)</strong>.</p>
+<p class="quiz-trigger" style="margin:1.2rem 0;padding:.7rem 1rem;border-left:4px solid #c45c26;background:#fff8f2;">⚡ <b>Быстрый тест:</b> в чат Cursor напиши <code>тест ГЛ-L3</code> — несколько коротких вопросов по всему блоку, потом сверка.</p>
+
+<h2 id="l4-2809--свободные-векторы-лнз-базис-гамеля">L4. 28.09 — свободные векторы, ЛНЗ, базис Гамеля</h2>
+<p><em>(Из записей Бегалиева: <a href="https://github.com/Begaliev-Kirill/SPBU/blob/master/Release/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F/%D0%93%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F%2028.09.2026.pdf" target="_blank" rel="noopener"><code>Геометрия 28.09.2026.pdf</code></a>; локально <code>материалы/_архив/_бегалиев-геометрия/28.pdf</code>. Фото доски: <code>материалы/_архив/доска-28.09-аффинные/</code>. Своими словами, примеры и промежуточные шаги — дополнено.)</em></p>
+<p>Видео: <a href="https://teach-in.ru/lecture/2022-02-07-Timashev-1" target="_blank" rel="noopener">МГУ, Тимашёв — векторные пространства: ЛНЗ и базис</a>.</p>
+<p><strong>Связь с прошлым.</strong> L3 ввела аффинное пространство и классы направленных отрезков (свободные векторы). На 28.09 доводят: операции на классах корректны, V — векторное пространство, (Eₙ, V) — аффинное; затем переходят к <strong>линейной комбинации, ЛНЗ, базису</strong> (в т.ч. базису Гамеля) и к следствию про аддитивные неоднородные функции.</p>
+<h3 id="операции-на-v-и-корректность">Операции на V и корректность</h3>
+<p>Напоминание <em>(из записей, блок «информация с прошлой лекции»).</em>   Направленный отрезок [XY⟩ = (X, [XY]) в Eₙ, n ∈ {0, …, 3}.   M = {[XY⟩ : X, Y ∈ Eₙ}.   [XY⟩ ∼ [WZ⟩, если [WZ] получается параллельным переносом [XY], переводящим X в W.   Свободный вектор XY := [[XY⟩]_∼.   V = { XY : X, Y ∈ Eₙ }. Зафиксировав начало (удобно «нулевое»), можно отождествить классы с отрезками из одной точки: { XY : Y ∈ Eₙ }.</p>
+<p><strong>Определение операций на V</strong> <em>(из записей).</em> Берут представителей с <strong>общим началом</strong> X:</p>
+<ul>
+<li>u + v: если u = XY, v = XZ′, то u + v := [[(X, [XY] + [XZ′])⟩]_∼;  </li>
+<li>λ · u: λ · XY := [[(X, λ · [XY])⟩]_∼.</li>
+</ul>
+<p>То есть операции «переносят» со структуры привязанных отрезков Vₙ = {[XY] : Y ∈ Eₙ} (уже векторное пространство с лекции 14.09).</p>
+<p><em>Своими словами.</em> Чтобы сложить два свободных вектора, рисуешь оба из одной точки, складываешь стрелки как обычно, и смотришь на класс результата. Растяжение — то же.</p>
+<p><strong>Пример.</strong> Из точки O: u = (2, 0), v = (0, 3). Сумма — класс стрелки (2, 3). Из другой точки A(1, 1) те же направления дают концы (3, 1) и (1, 4); сумма снова класс (2, 3).   <em>(Рис. L-4a.)</em></p>
+<figure class="fig">
+        <svg viewBox="0 0 380 200" width="380" height="200" aria-label="Сумма из двух начал">
+          <defs>
+            <marker id="L-4a-L-4a-a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-4a-L-4a-a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+            <marker id="L-4a-L-4a-a3" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#333"/></marker>
+          </defs>
+          <text x="20" y="22" font-size="13" fill="#666">из O</text>
+          <circle cx="40" cy="150" r="4" fill="#333"/>
+          <line x1="40" y1="150" x2="140" y2="150" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a1)"/>
+          <line x1="40" y1="150" x2="40" y2="60" stroke="#8a4b1f" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a2)"/>
+          <line x1="40" y1="150" x2="140" y2="60" stroke="#333" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a3)"/>
+          <text x="28" y="168" font-size="12">O</text>
+          <text x="85" y="168" font-size="12" fill="#1f5c4d">u</text>
+          <text x="48" y="100" font-size="12" fill="#8a4b1f">v</text>
+          <text x="100" y="95" font-size="12">u+v</text>
+
+          <text x="210" y="22" font-size="13" fill="#666">из A — тот же класс суммы</text>
+          <circle cx="230" cy="150" r="4" fill="#333"/>
+          <line x1="230" y1="150" x2="330" y2="150" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a1)"/>
+          <line x1="230" y1="150" x2="230" y2="60" stroke="#8a4b1f" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a2)"/>
+          <line x1="230" y1="150" x2="330" y2="60" stroke="#333" stroke-width="2.5" marker-end="url(#L-4a-L-4a-a3)"/>
+          <text x="218" y="168" font-size="12">A</text>
+          <text x="275" y="168" font-size="12" fill="#1f5c4d">u</text>
+          <text x="238" y="100" font-size="12" fill="#8a4b1f">v</text>
+          <text x="290" y="95" font-size="12">u+v</text>
+        </svg>
+        <figcaption>Рис. L-4a · сумма свободных векторов: начало можно сменить — класс u+v тот же</figcaption>
+      </figure>
+<p><strong>Проверка корректности</strong> <em>(из записей + доска).</em> Нужно: если [X₁Y₁⟩ ∼ [XY⟩ и [W₁Z₁⟩ ∼ [WZ⟩, то</p>
+<p>[[(X, [XY] + λ[WZ])⟩]_∼ = [[(X₁, [X₁Y₁] + λ[W₁Z₁])⟩]_∼.</p>
+<p>Параллельный перенос Φ_X^{X₁} — изоморфизм (с лекции 14.09):</p>
+<p>Φ_X^{X₁}([XY] + λ[XZ′]) = Φ_X^{X₁}([XY]) + λ Φ_X^{X₁}([XZ′]) = [X₁Y₁] + λ[X₁Z₁′].</p>
+<p>Параллелограмм XYPZ″ переносится в X₁Y₁P₁Z₁″ ⇒ [XP⟩ ∼ [X₁P₁⟩. Коммутативность сложения и аксиомы векторного пространства для V проверяются так же, как для привязанных отрезков <em>(из записей: «очевидна / как для Vₙ»)</em>.</p>
+<p><em>Своими словами.</em> Можно целиком «перетащить» чертёж в другую точку — класс суммы/растяжения не изменится. Значит операции на <strong>классах</strong> не зависят от выбора начала. Тогда V — векторное пространство, а (X, Y) ↦ XY задаёт структуру аффинного пространства на Eₙ.</p>
+<p><strong>Не-пример корректности (что было бы плохо).</strong> Если бы сумма зависела от точки начала (например, «всегда брать конец первого вектора как начало второго» без параллельного переноса), классы смешались бы — свободный вектор перестал бы быть «свободен».</p>
+<h3 id="изоморфизм-ψ--v--vₙ">Изоморфизм Ψ : V → Vₙ</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> Ψ : V → Vₙ,</p>
+<p>Ψ([[WZ⟩]_∼) = [XZ′], где [WZ⟩ ∼ [XZ′]</p>
+<p>(каждый класс отображаем в привязанный отрезок-представитель с выбранным началом X).</p>
+<p>Обратное: Ψ⁻¹([XY]) = [[XY⟩]_∼. Значит Ψ — биекция. Линейность следует из того, что параллельный перенос — изоморфизм, поэтому Ψ — <strong>изоморфизм</strong> V ≅ Vₙ.</p>
+<p><em>Своими словами.</em> «Свободные» и «привязанные к одной точке» — одна и та же линейная алгебра, только с разной картинкой. На доске те же стрелки обозначали ψ_X : V → V_X.</p>
+<p><strong>Пример.</strong> В плоскости: класс всех стрелок длины 1 вправо ↔ конкретная стрелка из O в (1, 0). Сложение классов ↔ сложение координат привязанных стрелок.</p>
+<h3 id="линейная-комбинация-и-лнз">Линейная комбинация и ЛНЗ</h3>
+<p>Дальше V — любое векторное пространство над полем K <em>(из записей)</em>.</p>
+<p><strong>Определение.</strong> Пусть u₁, …, uₙ ∈ V, λ₁, …, λₙ ∈ K. Сумма</p>
+<p>λ₁ u₁ + … + λₙ uₙ = ∑_{i=1}^n λᵢ uᵢ</p>
+<p>называется <strong>линейной комбинацией</strong> векторов u₁, …, uₙ с коэффициентами λ₁, …, λₙ.   Если хотя бы один λᵢ ≠ 0, комбинация <strong>нетривиальная</strong>.</p>
+<p><em>Своими словами.</em> Берёшь несколько векторов, каждый растягиваешь своим числом и складываешь.</p>
+<p><strong>Пример.</strong> В ℝ²: 2·(1, 0) + (−1)·(0, 1) = (2, −1). Коэффициенты 2 и −1 — не все нули ⇒ нетривиальная.   <em>(Образ базиса и комбинации — рис. L-4b; коэффициенты — числа, не «третья координата».)</em></p>
+<figure class="fig">
+        <svg viewBox="0 0 320 220" width="320" height="220" aria-label="Базис R2">
+          <defs>
+            <marker id="L-4b-L-4b-a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-4b-L-4b-a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+            <marker id="L-4b-L-4b-a3" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#a33"/></marker>
+          </defs>
+          <line x1="40" y1="180" x2="280" y2="180" stroke="#bbb"/>
+          <line x1="40" y1="180" x2="40" y2="30" stroke="#bbb"/>
+          <line x1="40" y1="180" x2="160" y2="180" stroke="#1f5c4d" stroke-width="2.5" marker-end="url(#L-4b-L-4b-a1)"/>
+          <line x1="40" y1="180" x2="40" y2="80" stroke="#8a4b1f" stroke-width="2.5" marker-end="url(#L-4b-L-4b-a2)"/>
+          <line x1="40" y1="180" x2="220" y2="100" stroke="#a33" stroke-width="2.5" marker-end="url(#L-4b-L-4b-a3)"/>
+          <text x="100" y="198" font-size="12" fill="#1f5c4d">e₁=(1,0)</text>
+          <text x="48" y="70" font-size="12" fill="#8a4b1f">e₂=(0,1)</text>
+          <text x="200" y="90" font-size="12" fill="#a33">3e₁+(−2)e₂</text>
+          <text x="200" y="108" font-size="12" fill="#a33">=(3,−2)</text>
+          <text x="48" y="205" font-size="12">O</text>
+        </svg>
+        <figcaption>Рис. L-4b · базис ℝ²: e₁, e₂ ЛНЗ и порождают; любой вектор — одна комбинация</figcaption>
+      </figure>
+<p><strong>Не-пример (письменно).</strong> 0·(1, 0) + 0·(0, 1) = (0, 0) — тривиальная комбинация (все коэффициенты нули). Она всегда даёт ноль и ни о чём не говорит.</p>
+<p><strong>Определение.</strong> Подмножество U ⊂ V <strong>линейно независимо</strong> (ЛНЗ), если для любых u₁, …, uₙ ∈ U и любых λ₁, …, λₙ ∈ K</p>
+<p>∑ λᵢ uᵢ = 0 ⇒ ∀ i λᵢ = 0.</p>
+<p>То есть <strong>нет</strong> нетривиальной линейной комбинации, равной нулю.</p>
+<p><em>Своими словами.</em> Векторы «не дублируют» друг друга: ни один нельзя собрать из остальных. Если сумма с коэффициентами дала ноль — значит, все коэффициенты были нулями.</p>
+<p><strong>Пример.</strong> В ℝ² векторы e₁ = (1, 0), e₂ = (0, 1) — ЛНЗ: λ₁ e₁ + λ₂ e₂ = (λ₁, λ₂) = 0 ⇒ λ₁ = λ₂ = 0.   <em>(Рис. L-4b — они не на одной прямой.)</em></p>
+<p><strong>Не-пример.</strong> (1, 0) и (2, 0): второй = 2·первый.   2·(1, 0) + (−1)·(2, 0) = 0 — нетривиальная зависимость. <em>(Рис. L-4c.)</em>   Тот же тип зависимости: (1, 0), (2, 0), (0, 1) тоже не ЛНЗ.</p>
+<figure class="fig">
+        <svg viewBox="0 0 300 180" width="300" height="180" aria-label="ЛЗ набор">
+          <defs>
+            <marker id="L-4c-L-4c-a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1f5c4d"/></marker>
+            <marker id="L-4c-L-4c-a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8a4b1f"/></marker>
+          </defs>
+          <line x1="40" y1="140" x2="260" y2="140" stroke="#bbb"/>
+          <line x1="40" y1="140" x2="40" y2="30" stroke="#bbb"/>
+          <line x1="40" y1="140" x2="160" y2="140" stroke="#1f5c4d" stroke-width="3" marker-end="url(#L-4c-L-4c-a1)"/>
+          <line x1="40" y1="140" x2="220" y2="140" stroke="#8a4b1f" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#L-4c-L-4c-a2)"/>
+          <text x="90" y="128" font-size="12" fill="#1f5c4d">(1,0)</text>
+          <text x="170" y="160" font-size="12" fill="#8a4b1f">(2,0)=2·(1,0)</text>
+          <text x="50" y="50" font-size="12" fill="#a33">зависимы: лежат на одной прямой</text>
+        </svg>
+        <figcaption>Рис. L-4c · не ЛНЗ: один вектор — растяжение другого</figcaption>
+      </figure>
+<h3 id="порождающий-набор-и-базис">Порождающий набор и базис</h3>
+<p><strong>Определение.</strong> W ⊂ V — <strong>порождающий</strong> набор, если ∀ v ∈ V существуют n ∈ ℕ, векторы u₁, …, uₙ ∈ W и скаляры λ₁, …, λₙ ∈ K такие, что</p>
+<p>v = ∑ λᵢ uᵢ.</p>
+<p><em>Своими словами.</em> Из «кирпичей» W можно сложить любой вектор пространства.</p>
+<p><strong>Пример.</strong> {(1, 0), (0, 1), (1, 1)} порождает ℝ² (уже первых двух хватает).   <strong>Не-пример.</strong> {(1, 0)} не порождает ℝ²: вектор (0, 1) из одного горизонтального не собрать.</p>
+<p><strong>Определение.</strong> Порождающий набор W ⊂ V называется <strong>базисом</strong>, если представление любого v через элементы W <strong>единственно</strong>:</p>
+<p>∀ v ∈ V ∃! n ∈ ℕ, ∃! u₁, …, uₙ ∈ W, ∃! λ₁, …, λₙ ∈ K: v = ∑ λᵢ uᵢ.</p>
+<p><em>Своими словами.</em> Базис — «ровно нужный набор осей»: хватает породить всё, и координаты при этом однозначны.</p>
+<p><strong>Пример.</strong> Стандартный базис ℝ²: {(1, 0), (0, 1)}. У (3, −2) ровно одно разложение: 3·(1, 0) + (−2)·(0, 1).   <em>(Рис. L-4b.)</em></p>
+<p><strong>Теорема (базис Гамеля).</strong> <em>(из записей)</em> В любом векторном пространстве существует базис (базис Гамеля).   <em>Без доказательства на лекции;</em> идея доказательства опирается на лемму Цорна <em>(помечено в записях)</em>.</p>
+<p><strong>Дополнено (осторожность).</strong> Базис Гамеля для ℝ как пространства над ℚ — «дикий» объект: его нельзя явно выписать, существование неконструктивно. Для курса важно само утверждение «базис есть» и следствия ниже; дальше обычно работают с <strong>конечномерными</strong> пространствами.</p>
+<h3 id="конечномерность-и-dim-v">Конечномерность и dim V</h3>
+<p><strong>Определение.</strong> <em>(из записей)</em> V <strong>конечномерно</strong>, если у него есть базис конечной мощности. Дальше на курсе рассматривают в основном такие.</p>
+<p><strong>Предложение №1.</strong> <em>(из записей)</em> Если W и W′ — базисы V, то |W′| = |W|. Это общее число обозначают <strong>dim V</strong> (размерность).</p>
+<p><em>Своими словами.</em> Сколько «осей» ни выбирай в качестве базиса — их всегда одинаково много. Это число и есть размерность.</p>
+<p><strong>Пример.</strong> dim ℝⁿ = n. dim {0} = 0 (базис — пустой набор).</p>
+<p><strong>Предложение №2.</strong> <em>(из записей; равносильность — упражнение на лекции)</em> Для W ⊂ V равносильны:</p>
+<ol>
+<li>W — базис;  </li>
+<li>W — <strong>максимальный</strong> ЛНЗ набор в V (нельзя добавить вектор, не потеряв ЛНЗ);  </li>
+<li>W — <strong>минимальный</strong> порождающий набор (нельзя выкинуть вектор, не потеряв порождение);  </li>
+<li>W — ЛНЗ и порождающий одновременно.</li>
+</ol>
+<p><strong>Пример к (2)/(3).</strong> В ℝ² набор {(1, 0)} ЛНЗ, но не максимален: можно добавить (0, 1). Набор {(1, 0), (0, 1), (1, 1)} порождает, но не минимален: (1, 1) лишний.</p>
+<h3 id="аддитивные-но-не-однородные-функции">Аддитивные, но не однородные функции</h3>
+<p><strong>Зачем это на лекции.</strong> <em>(из записей)</em> Из существования базиса в любом пространстве следует, что бывают функции f с</p>
+<p>f(a + b) = f(a) + f(b),</p>
+<p>но <strong>не</strong> обязательно f(λ a) = λ f(a) для всех скаляров λ. То есть аддитивность ≠ линейность.</p>
+<p><strong>Шаг 1. Из аддитивности следует ℚ-однородность.</strong> <em>(из записей)</em>   Для n ∈ ℕ: f(n x) = f(x + … + x) = n f(x).   Отсюда f(x) = f(n · (x/n)) = n f(x/n) ⇒ f(x/n) = (1/n) f(x).   При x = y = 0: f(0) = f(0) + f(0) ⇒ f(0) = 0.   При y = −x: f(0) = f(x) + f(−x) ⇒ f(−x) = −f(x).   Собирая: ∀ a ∈ ℚ, ∀ x f(a x) = a f(x).</p>
+<p><em>Своими словами.</em> Если функция только «уважает сложение», для рациональных множителей однородность всё равно вылезает сама. Беда начинается на иррациональных коэффициентах.</p>
+<p><strong>Шаг 2. Контрпример через базис Гамеля.</strong> <em>(из записей; поле уточнено)</em>   Рассматриваем ℝ как векторное пространство над <strong>ℚ</strong> (в записях местами написано «над ℝ» — для конструкции Гамеля нужен именно ℚ: иначе базис одномерен и трюк не работает).   Пусть W ⊂ ℝ — базис Гамеля над ℚ. Зафиксируем w ∈ W и зададим f на базисе:</p>
+<p>f(u) = 1, если u = w;  f(u) = 0, если u ∈ W, u ≠ w;</p>
+<p>и продолжим по линейности над ℚ: для r = ∑ λᵢ uᵢ (единственное конечное разложение) полагаем f(r) = ∑ λᵢ f(uᵢ). Тогда f(r) равно коэффициенту при w в разложении r.</p>
+<p>Возьмём w′ ∈ W, w′ ≠ w. Тогда f(w′) = 0, но λ := w′/w ∈ ℝ \\ ℚ в общем положении, и</p>
+<p>f(λ w) = f(w′) = 0,  λ f(w) = λ · 1 = λ ≠ 0,</p>
+<p>значит f(λ w) ≠ λ f(w). При этом f аддитивна по построению.</p>
+<p><strong>Пример-картинка (не доказательство).</strong> Обычная f(x) = 3x и аддитивна, и однородна над ℝ. «Дикая» f из базиса Гамеля аддитивна, на рациональных ведёт себя прилично, а на каких-то иррациональных «ломает» однородность — но явно её не нарисуешь.</p>
+<p><strong>Не-пример.</strong> f(x) = x² не аддитивна: f(1+1) = 4 ≠ 1+1 = f(1)+f(1). Это другой тип «плохой» функции.</p>
+<hr />
+      </div>
+    </div>
+    <p class="quiz-trigger">⚡ <b>Быстрый тест:</b> в чат <code>тест ГЛ-L4</code> — по блоку свободных векторов / ЛНЗ / базиса.</p>
+</div>
+  </div>
+</main>
+</body>
+</html>

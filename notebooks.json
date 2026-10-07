@@ -2,16 +2,34 @@
   "updatedAt": null,
   "items": [
     {
-      "id": "geometry",
-      "title": "Геометрия · L / П",
-      "subject": "Геометрия и топология / практика",
-      "href": "./notebooks/geometry.html"
+      "id": "geometry-theory",
+      "title": "Геометрия · теория",
+      "subject": "Геометрия и топология",
+      "href": "./notebooks/geometry-theory.html"
     },
     {
-      "id": "skvoznaya",
-      "title": "Множества · отображения · пределы",
-      "subject": "Алгебра / матанализ (теория, сквозная)",
-      "href": "./notebooks/skvoznaya.html"
+      "id": "geometry-practice",
+      "title": "Геометрия · практика",
+      "subject": "Практическая геометрия",
+      "href": "./notebooks/geometry-practice.html"
+    },
+    {
+      "id": "matan-theory",
+      "title": "Матанализ · теория",
+      "subject": "Математический анализ (теория)",
+      "href": "./notebooks/matan-theory.html"
+    },
+    {
+      "id": "algebra-theory",
+      "title": "Алгебра · теория",
+      "subject": "Алгебра (теория)",
+      "href": "./notebooks/algebra-theory.html"
+    },
+    {
+      "id": "discrete-theory",
+      "title": "Дискретная · теория",
+      "subject": "Дискретная математика (теория)",
+      "href": "./notebooks/discrete-theory.html"
     },
     {
       "id": "matan-practice",
