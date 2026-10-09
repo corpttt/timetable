@@ -615,12 +615,45 @@
     needle.dataset.label = now.time;
   }
 
+  function weekContainsDate(week, isoDate) {
+    const dates = (week.days || [])
+      .map((d) => d.date)
+      .filter(Boolean)
+      .sort();
+    if (!dates.length) return false;
+    if (dates.includes(isoDate)) return true;
+    return dates[0] <= isoDate && isoDate <= dates[dates.length - 1];
+  }
+
+  function nearestDayIso(isoDate) {
+    const all = [];
+    for (const w of state.data?.weeks || []) {
+      for (const d of w.days || []) {
+        if (d.date) all.push(d.date);
+      }
+    }
+    all.sort();
+    if (!all.length) return null;
+    if (all.includes(isoDate)) return isoDate;
+    let best = all[0];
+    let bestDist = Infinity;
+    for (const d of all) {
+      const dist = Math.abs(Date.parse(d) - Date.parse(isoDate));
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = d;
+      }
+    }
+    return best;
+  }
+
   function jumpToNow(smooth) {
     const now = moscowNow();
-    // open week containing today
-    const week = (state.data?.weeks || []).find((w) =>
-      (w.days || []).some((d) => d.date === now.date)
-    );
+    const week =
+      (state.data?.weeks || []).find((w) => weekContainsDate(w, now.date)) ||
+      (state.data?.weeks || []).find((w) =>
+        (w.days || []).some((d) => d.date === nearestDayIso(now.date))
+      );
     if (week) {
       const id = String(week.id);
       $$(".week-tab").forEach((b) =>
@@ -630,13 +663,20 @@
         p.classList.toggle("active", p.dataset.week === id)
       );
     }
+    const scrollDate = nearestDayIso(now.date) || now.date;
     requestAnimationFrame(() => {
       updateNowNeedle();
       const needle = $(".week-panel.active .now-needle");
-      const day = document.getElementById(`day-${now.date}`);
-      const target = needle && !needle.hidden ? needle : day;
-      target?.scrollIntoView({
-        behavior: smooth ? "smooth" : "instant",
+      const day = document.getElementById(`day-${scrollDate}`);
+      const useNeedle =
+        needle && !needle.hidden && document.getElementById(`day-${now.date}`);
+      const target = useNeedle ? needle : day;
+      if (!target) {
+        toast("Нет пар рядом с сегодня");
+        return;
+      }
+      target.scrollIntoView({
+        behavior: smooth ? "smooth" : "auto",
         block: "center",
       });
     });
@@ -717,6 +757,7 @@
     const pick = $("#group-pick");
     const main = $("#app-main");
     if (!root || !pick) return;
+    document.body.classList.add("onboarding-open");
     if (main) main.hidden = true;
     pick.innerHTML = state.groups
       .map(
@@ -732,6 +773,7 @@
         writeGroupId(btn.dataset.id);
         state.data = null;
         root.hidden = true;
+        document.body.classList.remove("onboarding-open");
         startWithGroup();
       });
     });
@@ -798,7 +840,7 @@
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker
-      .register("./sw.js?v=25")
+      .register("./sw.js?v=26")
       .then((reg) => {
         reg.update().catch(() => {});
         if (reg.waiting) {
@@ -842,6 +884,7 @@
       writeGroupId(saved);
       const onboard = $("#onboarding");
       if (onboard) onboard.hidden = true;
+      document.body.classList.remove("onboarding-open");
       await startWithGroup();
     }
 

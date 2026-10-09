@@ -282,8 +282,8 @@ html[data-theme="light"] .badge-local-only {
 
 .fab-now {
   position: fixed;
-  right: 1rem;
-  bottom: 1.25rem;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -292,12 +292,16 @@ html[data-theme="light"] .badge-local-only {
   color: #fff;
   font-size: 18px;
   font-weight: 700;
+  line-height: 1;
+  padding: 0;
   cursor: pointer;
   z-index: 45;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .fab-now:hover { filter: brightness(1.08); }
-.fab-now:active { transform: scale(0.96); }
+body.onboarding-open .fab-now { visibility: hidden; pointer-events: none; }
 
 .week-tabs {
   display: flex;
@@ -559,5 +563,4 @@ html[data-theme="light"] .badge-local-only {
 
 @media (max-width: 560px) {
   .timeline { padding-left: calc(var(--rail) + 0.65rem); }
-  .fab-now { bottom: 5.5rem; }
 }
