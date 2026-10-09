@@ -798,7 +798,7 @@
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker
-      .register("./sw.js?v=24")
+      .register("./sw.js?v=25")
       .then((reg) => {
         reg.update().catch(() => {});
         if (reg.waiting) {
@@ -828,7 +828,7 @@
       await loadSchedule({ force: true });
       location.reload();
     });
-    $("#btn-now")?.addEventListener("click", () => jumpToNow(true));
+    $("#fab-now")?.addEventListener("click", () => jumpToNow(true));
     $("#btn-group")?.addEventListener("click", () => showOnboarding());
 
     registerSW();
