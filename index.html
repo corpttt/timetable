@@ -7,37 +7,46 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Расписание">
-  <meta name="description" content="Личное расписание пар">
+  <meta name="description" content="Расписание пар Матмеха (Б81–Б84)">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <title>Расписание</title>
-  <link rel="stylesheet" href="./styles.css?v=23">
-  <script src="./theme.js?v=23"></script>
+  <link rel="stylesheet" href="./styles.css?v=24">
+  <script src="./theme.js?v=24"></script>
 </head>
 <body>
   <header class="app-header">
     <div class="app-header-inner">
-      <a class="brand" href="./">
+      <a class="brand" href="./" id="brand-link">
         <span class="brand-mark">∎</span>
-        <span>расписание</span>
+        <span id="brand-label">расписание</span>
       </a>
       <div class="header-actions">
+        <button type="button" class="btn" id="btn-group" title="Сменить группу" hidden>группа</button>
+        <button type="button" class="btn" id="btn-now" title="К текущему времени">↓ сейчас</button>
         <button type="button" class="btn" id="btn-theme" title="Тема">◑</button>
         <button type="button" class="btn" id="btn-refresh" title="Скачать свежее расписание с сайта">↻ Обновить</button>
       </div>
     </div>
   </header>
 
-  <div class="wrap">
-    <p class="status-line" id="status-line">Загрузка…</p>
+  <div id="onboarding" class="onboarding" hidden>
+    <div class="onboarding-card">
+      <h1>Выбери группу</h1>
+      <p class="onboarding-sub">Запомнится на этом устройстве. Потом можно сменить в шапке.</p>
+      <div class="group-pick" id="group-pick"></div>
+    </div>
+  </div>
+
+  <div class="wrap" id="app-main" hidden>
     <p class="now-hint" id="now-hint" hidden></p>
     <nav class="week-tabs" id="week-tabs" aria-label="Недели"></nav>
     <div id="weeks"></div>
   </div>
 
   <div class="toast" id="toast" role="status"></div>
-  <script src="./app.js?v=23"></script>
+  <script src="./app.js?v=24"></script>
 </body>
 </html>

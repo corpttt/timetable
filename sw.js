@@ -1,15 +1,20 @@
-const CACHE = "schedule-shell-v23";
+const CACHE = "schedule-shell-v24";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css",
-  "./styles.css?v=23",
+  "./styles.css?v=24",
   "./app.js",
-  "./app.js?v=23",
+  "./app.js?v=24",
   "./theme.js",
-  "./theme.js?v=23",
+  "./theme.js?v=24",
   "./manifest.json",
+  "./groups.json",
   "./schedule.json",
+  "./schedules/Б81.json",
+  "./schedules/Б82.json",
+  "./schedules/Б83.json",
+  "./schedules/Б84.json",
   "./overrides.json",
   "./favicon.ico",
   "./icons/icon-192.png",
@@ -41,8 +46,11 @@ function isLiveJson(url) {
   return (
     p.endsWith("/schedule.json") ||
     p.endsWith("schedule.json") ||
+    p.endsWith("/groups.json") ||
+    p.endsWith("groups.json") ||
     p.endsWith("/overrides.json") ||
-    p.endsWith("overrides.json")
+    p.endsWith("overrides.json") ||
+    /\/schedules\/[^/]+\.json$/i.test(p)
   );
 }
 

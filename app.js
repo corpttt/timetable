@@ -1,11 +1,16 @@
 /* Schedule PWA */
 (function () {
   const TZ = "Europe/Moscow";
-  const DATA_URL = "./schedule.json";
+  const GROUPS_URL = "./groups.json";
   const OVERRIDES_URL = "./overrides.json";
-  const CACHE_KEY = "schedule-cache-v3";
-  const CACHE_KEYS_LEGACY = ["schedule-cache-v2", "schedule-cache-v1", "b84-schedule-cache-v1"];
-  const SPBU_GROUP = 459575;
+  const GROUP_KEY = "ucheba-schedule-group";
+  const CACHE_PREFIX = "schedule-cache-v4:";
+  const CACHE_KEYS_LEGACY = [
+    "schedule-cache-v3",
+    "schedule-cache-v2",
+    "schedule-cache-v1",
+    "b84-schedule-cache-v1",
+  ];
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -15,7 +20,55 @@
     nearest: null,
     colorMap: null,
     overrides: { items: [] },
+    groups: [],
+    groupId: null,
   };
+
+  function cacheKey(groupId) {
+    return CACHE_PREFIX + (groupId || "Б84");
+  }
+
+  function readGroupId() {
+    try {
+      const v = localStorage.getItem(GROUP_KEY);
+      if (v) return v;
+    } catch (_) {}
+    return null;
+  }
+
+  function writeGroupId(id) {
+    try {
+      localStorage.setItem(GROUP_KEY, id);
+    } catch (_) {}
+    state.groupId = id;
+  }
+
+  function currentGroup() {
+    return (
+      state.groups.find((g) => g.id === state.groupId) ||
+      state.groups.find((g) => g.id === "Б84") ||
+      state.groups[0] ||
+      null
+    );
+  }
+
+  function scheduleUrl(group) {
+    if (group?.file) return "./" + String(group.file).replace(/^\.\//, "");
+    return "./schedule.json";
+  }
+
+  function updateBrand() {
+    const g = currentGroup();
+    const label = $("#brand-label");
+    const btn = $("#btn-group");
+    if (label) {
+      label.textContent = g ? `расписание · ${g.short || g.id}` : "расписание";
+    }
+    if (btn) {
+      btn.hidden = !g;
+      btn.textContent = g ? g.short || g.id : "группа";
+    }
+  }
 
   function toast(msg) {
     const el = $("#toast");
@@ -589,22 +642,6 @@
     });
   }
 
-  function updateStatus(extra = "") {
-    const now = moscowNow();
-    const updated = state.data?.updatedAt
-      ? new Date(state.data.updatedAt).toLocaleString("ru-RU", { timeZone: TZ })
-      : "—";
-    const sync = state.data?.syncStats;
-    const syncTxt = sync
-      ? `<span title="расхождения с Timetable SPbU">только Timetable: ${sync.spbuOnly || 0} · только таблица: ${sync.localOnly || 0}</span>`
-      : "";
-    $("#status-line").innerHTML = `
-      <span>Сейчас: ${escapeHtml(now.label)}</span>
-      <span>Данные: ${escapeHtml(updated)}</span>
-      ${syncTxt}
-      ${extra}`;
-  }
-
   function applyData(data) {
     state.data = data;
     state.colorMap = buildColorMap(collectAllGroups(data));
@@ -612,20 +649,32 @@
     state.nearest = findNearest(data.lessons || [], now);
     renderNowHint(state.nearest);
     renderSchedule(data, state.nearest);
-    updateStatus();
+    updateBrand();
+    const main = $("#app-main");
+    if (main) main.hidden = false;
     requestAnimationFrame(() => {
       jumpToNow(false);
       updateNowNeedle();
     });
   }
 
-  function readLocalCache() {
-    if (state.data) return state.data;
-    for (const key of [CACHE_KEY, ...CACHE_KEYS_LEGACY]) {
+  function readLocalCache(groupId) {
+    const gid = groupId || state.groupId;
+    const keys = [cacheKey(gid), ...CACHE_KEYS_LEGACY];
+    for (const key of keys) {
       const raw = localStorage.getItem(key);
       if (!raw) continue;
       try {
-        return JSON.parse(raw);
+        const data = JSON.parse(raw);
+        if (
+          gid &&
+          data.groupId &&
+          data.groupId !== gid &&
+          key.startsWith(CACHE_PREFIX)
+        ) {
+          continue;
+        }
+        return data;
       } catch {
         /* ignore broken cache */
       }
@@ -636,53 +685,85 @@
   function writeLocalCache(data) {
     try {
       const raw = JSON.stringify(data);
-      localStorage.setItem(CACHE_KEY, raw);
-      // keep legacy key so older builds still see data
-      localStorage.setItem("schedule-cache-v1", raw);
+      localStorage.setItem(cacheKey(state.groupId || data.groupId), raw);
     } catch (err) {
       console.warn("localStorage full?", err);
     }
   }
 
-  async function tryLiveSpbuEnrich(data) {
-    if (!navigator.onLine) return data;
+  async function loadGroupsCatalog() {
     try {
-      const now = moscowNow();
-      const d = new Date(`${now.date}T12:00:00+03:00`);
-      const mon = new Date(d);
-      mon.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-      const sun = new Date(mon);
-      sun.setDate(mon.getDate() + 6);
-      const a = mon.toISOString().slice(0, 10);
-      const b = sun.toISOString().slice(0, 10);
-      const url = `https://timetable.spbu.ru/api/v1/groups/${SPBU_GROUP}/events/${a}/${b}`;
-      const res = await fetch(url, { mode: "cors" });
-      if (!res.ok) return data;
+      const res = await fetch(GROUPS_URL, { cache: "default" });
+      if (!res.ok) throw new Error(`groups ${res.status}`);
+      const data = await res.json();
+      state.groups = data.groups || [];
       return data;
     } catch {
-      return data;
+      state.groups = [
+        {
+          id: "Б84",
+          name: "26.Б84-мм",
+          short: "Б84",
+          spbuId: 459575,
+          file: "schedule.json",
+        },
+      ];
+      return { defaultId: "Б84", groups: state.groups };
     }
+  }
+
+  function showOnboarding() {
+    const root = $("#onboarding");
+    const pick = $("#group-pick");
+    const main = $("#app-main");
+    if (!root || !pick) return;
+    if (main) main.hidden = true;
+    pick.innerHTML = state.groups
+      .map(
+        (g) =>
+          `<button type="button" class="group-pick-btn" data-id="${escapeHtml(g.id)}">
+            <strong>${escapeHtml(g.short || g.id)}</strong>
+            <span>${escapeHtml(g.name || "")}</span>
+          </button>`
+      )
+      .join("");
+    pick.querySelectorAll(".group-pick-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        writeGroupId(btn.dataset.id);
+        state.data = null;
+        root.hidden = true;
+        startWithGroup();
+      });
+    });
+    root.hidden = false;
+    updateBrand();
   }
 
   async function loadSchedule({ force = false } = {}) {
     const btn = $("#btn-refresh");
     if (btn) btn.disabled = true;
+    const group = currentGroup();
+    if (!group) {
+      if (btn) btn.disabled = false;
+      return;
+    }
 
-    // Seed UI from memory/localStorage before network (works fully offline)
-    const cached = readLocalCache();
+    const cached = readLocalCache(group.id);
     if (cached && !state.data) {
       applyData(cached);
-      updateStatus('<span class="ok">из кэша</span>');
     }
 
     try {
-      // Never bust with ?t= — breaks Cache API match offline
       const [res, ovRes] = await Promise.all([
-        fetch(DATA_URL, { cache: force ? "reload" : "default" }),
-        fetch(OVERRIDES_URL, { cache: force ? "reload" : "default" }).catch(() => null),
+        fetch(scheduleUrl(group), { cache: force ? "reload" : "default" }),
+        fetch(OVERRIDES_URL, {
+          cache: force ? "reload" : "default",
+        }).catch(() => null),
       ]);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let data = await res.json();
+      data.groupId = data.groupId || group.id;
+      data.groupName = data.groupName || group.name;
       if (ovRes && ovRes.ok) {
         try {
           state.overrides = await ovRes.json();
@@ -690,51 +771,53 @@
           state.overrides = { items: [] };
         }
       }
-      data = await tryLiveSpbuEnrich(data);
       writeLocalCache(data);
       applyData(data);
       if (force) toast("Расписание обновлено");
-      else updateStatus('<span class="ok">онлайн</span>');
     } catch (err) {
-      const fallback = readLocalCache();
+      const fallback = readLocalCache(group.id);
       if (fallback) {
-        // Keep current view if already showing the same cache
         if (!state.data) applyData(fallback);
-        updateStatus(
-          `<span class="err">офлайн · кэш</span>`
-        );
         toast(force ? "Нет сети — оставлен кэш" : "Офлайн · показан кэш");
       } else {
-        updateStatus(
-          `<span class="err">${escapeHtml(String(err.message))}</span>`
-        );
-        toast("Нет данных офлайн — открой приложение онлайн один раз");
+        toast("Нет данных — открой онлайн один раз");
+        console.error(err);
       }
     } finally {
       if (btn) btn.disabled = false;
     }
   }
 
-  function registerSW() {
-    if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("./sw.js?v=22").then((reg) => {
-      reg.update().catch(() => {});
-      if (reg.waiting) {
-        reg.waiting.postMessage({ type: "SKIP_WAITING" });
-      }
-      reg.addEventListener("updatefound", () => {
-        const w = reg.installing;
-        if (!w) return;
-        w.addEventListener("statechange", () => {
-          if (w.state === "installed" && navigator.serviceWorker.controller) {
-            location.reload();
-          }
-        });
-      });
-    }).catch(() => {});
+  async function startWithGroup() {
+    updateBrand();
+    const cached = readLocalCache(state.groupId);
+    if (cached) applyData(cached);
+    await loadSchedule();
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function registerSW() {
+    if (!("serviceWorker" in navigator)) return;
+    navigator.serviceWorker
+      .register("./sw.js?v=24")
+      .then((reg) => {
+        reg.update().catch(() => {});
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
+        reg.addEventListener("updatefound", () => {
+          const w = reg.installing;
+          if (!w) return;
+          w.addEventListener("statechange", () => {
+            if (w.state === "installed" && navigator.serviceWorker.controller) {
+              location.reload();
+            }
+          });
+        });
+      })
+      .catch(() => {});
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
     $("#btn-refresh")?.addEventListener("click", async () => {
       try {
         const keys = await caches.keys();
@@ -745,15 +828,27 @@
       await loadSchedule({ force: true });
       location.reload();
     });
-    // Immediate offline paint, then try network
-    const cached = readLocalCache();
-    if (cached) applyData(cached);
-    loadSchedule();
-    registerSW();
+    $("#btn-now")?.addEventListener("click", () => jumpToNow(true));
+    $("#btn-group")?.addEventListener("click", () => showOnboarding());
 
-    window.addEventListener("online", () => loadSchedule({ force: true }));
+    registerSW();
+    await loadGroupsCatalog();
+
+    const saved = readGroupId();
+    const known = state.groups.some((g) => g.id === saved);
+    if (!saved || !known) {
+      showOnboarding();
+    } else {
+      writeGroupId(saved);
+      const onboard = $("#onboarding");
+      if (onboard) onboard.hidden = true;
+      await startWithGroup();
+    }
+
+    window.addEventListener("online", () => {
+      if (state.groupId) loadSchedule({ force: true });
+    });
     window.addEventListener("offline", () => {
-      updateStatus('<span class="err">офлайн</span>');
       toast("Офлайн — можно смотреть кэш");
     });
 
@@ -762,7 +857,6 @@
       const now = moscowNow();
       state.nearest = findNearest(state.data.lessons || [], now);
       renderNowHint(state.nearest);
-      updateStatus(navigator.onLine ? "" : '<span class="err">офлайн</span>');
       updateNowNeedle();
     }, 15_000);
     window.addEventListener("resize", () => updateNowNeedle());

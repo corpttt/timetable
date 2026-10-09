@@ -1,8 +1,8 @@
 {
   "id": "/timetable/",
-  "name": "Расписание Б84",
+  "name": "Расписание Матмех",
   "short_name": "Расписание",
-  "description": "Личное расписание пар Б84",
+  "description": "Расписание пар 26.Б81–Б84-мм",
   "start_url": "/timetable/",
   "scope": "/timetable/",
   "display": "standalone",
