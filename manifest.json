@@ -2,7 +2,7 @@
   "id": "/timetable/",
   "name": "Расписание Б84",
   "short_name": "Расписание",
-  "description": "Расписание и тетради Б84",
+  "description": "Личное расписание пар Б84",
   "start_url": "/timetable/",
   "scope": "/timetable/",
   "display": "standalone",
@@ -16,12 +16,6 @@
       "short_name": "Пары",
       "url": "/timetable/",
       "description": "Недели и пары"
-    },
-    {
-      "name": "Тетради",
-      "short_name": "Тетради",
-      "url": "/timetable/notebooks.html",
-      "description": "Учебные HTML-тетради"
     }
   ],
   "icons": [

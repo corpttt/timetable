@@ -1,26 +1,16 @@
-const CACHE = "schedule-shell-v22";
+const CACHE = "schedule-shell-v23";
 const SHELL = [
   "./",
   "./index.html",
-  "./notebooks.html",
   "./styles.css",
-  "./styles.css?v=22",
+  "./styles.css?v=23",
   "./app.js",
-  "./app.js?v=22",
-  "./notebooks.js",
-  "./notebooks.js?v=22",
-  "./notebooks-chrome.js",
-  "./notebooks-chrome.js?v=22",
-  "./notebooks-chrome.css",
-  "./notebooks-chrome.css?v=22",
-  "./flip.js",
-  "./flip.js?v=22",
+  "./app.js?v=23",
   "./theme.js",
-  "./theme.js?v=22",
+  "./theme.js?v=23",
   "./manifest.json",
   "./schedule.json",
   "./overrides.json",
-  "./notebooks.json",
   "./favicon.ico",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -52,30 +42,18 @@ function isLiveJson(url) {
     p.endsWith("/schedule.json") ||
     p.endsWith("schedule.json") ||
     p.endsWith("/overrides.json") ||
-    p.endsWith("overrides.json") ||
-    p.endsWith("/notebooks.json") ||
-    p.endsWith("notebooks.json")
+    p.endsWith("overrides.json")
   );
-}
-
-function isNotebookHtml(url) {
-  return url.pathname.includes("/notebooks/") && url.pathname.endsWith(".html");
 }
 
 function isShellHtml(url) {
   const p = url.pathname;
-  return (
-    /\/index\.html$/i.test(p) ||
-    /\/notebooks\.html$/i.test(p) ||
-    /\/timetable\/?$/i.test(p)
-  );
+  return /\/index\.html$/i.test(p) || /\/timetable\/?$/i.test(p);
 }
 
 function isShellAsset(url) {
   const p = url.pathname;
-  return /\/(styles\.css|app\.js|notebooks\.js|notebooks-chrome\.(js|css)|flip\.js|theme\.js|sw\.js)$/i.test(
-    p
-  );
+  return /\/(styles\.css|app\.js|theme\.js|sw\.js)$/i.test(p);
 }
 
 async function networkFirst(event) {
@@ -84,7 +62,6 @@ async function networkFirst(event) {
     const res = await fetch(event.request, { cache: "no-cache" });
     if (res && res.ok) {
       await cache.put(event.request, res.clone());
-      // also store bare path without query for offline
       try {
         const u = new URL(event.request.url);
         if (u.search) {
@@ -110,7 +87,6 @@ self.addEventListener("fetch", (event) => {
 
   if (
     isLiveJson(url) ||
-    isNotebookHtml(url) ||
     isShellHtml(url) ||
     isShellAsset(url) ||
     event.request.mode === "navigate"
