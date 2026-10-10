@@ -439,7 +439,7 @@
     return day;
   }
 
-  function eachLessonOnDate(data, date, cb) {
+  function eachLessonRefOnDate(data, date, cb) {
     for (const w of data.weeks || []) {
       for (const d of w.days || []) {
         if (d.date !== date) continue;
@@ -447,7 +447,18 @@
           const start = parsePairStart(pair.time);
           const end = parsePairEnd(pair.time);
           for (const s of pair.subjects || []) {
-            cb({ name: s.name, meta: s.meta, time: pair.time, start, end });
+            cb({
+              type: "local",
+              week: w,
+              day: d,
+              pair,
+              subject: s,
+              name: s.name,
+              meta: s.meta,
+              time: pair.time,
+              start,
+              end,
+            });
           }
         }
       }
@@ -455,6 +466,8 @@
     for (const s of data.spbuOnly || []) {
       if (s.date !== date) continue;
       cb({
+        type: "spbu",
+        entry: s,
         name: s.subject,
         meta: s.meta,
         time: `${s.start}–${s.end || "?"}`,
@@ -464,14 +477,119 @@
     }
   }
 
-  function baseLessonClaimsOverride(baseData, it, date, subjectKey) {
-    let claimed = false;
-    eachLessonOnDate(baseData, date, ({ name, meta }) => {
-      if (!subjectNameMatchesKey(name, subjectKey)) return;
-      const ov = overrideForSubject(date, name, meta);
-      if (ov && ov.id === it.id) claimed = true;
+  function overrideItemMatchesLesson(it, date, name, meta) {
+    const ov = overrideForSubject(date, name, meta);
+    return ov && ov.id === it.id;
+  }
+
+  function collectOverrideMatchesOnDate(data, it, date) {
+    const matched = [];
+    eachLessonRefOnDate(data, date, (ref) => {
+      if (overrideItemMatchesLesson(it, date, ref.name, ref.meta)) matched.push(ref);
     });
-    return claimed;
+    return matched;
+  }
+
+  function stripMergedLessonSuffix(name, mergedCount) {
+    if (mergedCount <= 1) return name;
+    let n = String(name || "").trim();
+    n = n.replace(
+      /\s*[—–]\s*(лекция|семинар|практика|практическое занятие)\s*$/iu,
+      ""
+    );
+    n = n.replace(
+      /,\s*(лекция|семинар|практика|практическое занятие)\s*$/iu,
+      ""
+    );
+    return n.trim() || name;
+  }
+
+  function applyTimedOverrideCollapse(data, it, date, matched) {
+    matched.sort(
+      (a, b) => (toMinutes(a.start) ?? 0) - (toMinutes(b.start) ?? 0)
+    );
+    const keeper = matched[0];
+    const mergedCount = matched.length;
+    const displayName = stripMergedLessonSuffix(keeper.name, mergedCount);
+    for (let i = 1; i < matched.length; i++) {
+      const m = matched[i];
+      if (m.type === "local") m.subject._overrideHidden = true;
+      else m.entry._overrideHidden = true;
+    }
+    if (keeper.type === "local") {
+      keeper.subject.name = displayName;
+      keeper.pair.time = it.time;
+      if (it.meta) keeper.subject.meta = it.meta;
+      keeper.subject._overrideCollapsed = it.id;
+    } else {
+      keeper.entry.subject = displayName;
+      if (it.meta) keeper.entry.meta = it.meta;
+      keeper.entry._overrideCollapsed = it.id;
+    }
+  }
+
+  function rebuildLessonsFromSchedule(data) {
+    const lessons = [];
+    for (const w of data.weeks || []) {
+      for (const d of w.days || []) {
+        for (const pair of d.pairs || []) {
+          for (const s of pair.subjects || []) {
+            if (s._overrideHidden) continue;
+            const start = parsePairStart(pair.time);
+            const end = parsePairEnd(pair.time);
+            const ov = overrideForSubject(d.date, s.name, s.meta);
+            const time = (ov && ov.time) || pair.time;
+            const st = (ov && ov.time ? parsePairStart(ov.time) : null) || start;
+            const en = (ov && ov.time ? parsePairEnd(ov.time) : null) || end;
+            lessons.push({
+              date: d.date,
+              dayTitle: d.title,
+              weekId: w.id,
+              weekTitle: w.title,
+              time,
+              start: st,
+              end: en,
+              subject: s.name,
+              meta: (ov && ov.meta) || s.meta,
+              syncKey:
+                s.syncKey ||
+                `${d.date}|${st}|${String(s.name).toLowerCase()}`,
+              sync: s.sync || "ok",
+              synthetic: Boolean(s.synthetic),
+            });
+          }
+        }
+      }
+    }
+    for (const s of data.spbuOnly || []) {
+      if (s._overrideHidden) continue;
+      const ov = overrideForSubject(s.date, s.subject, s.meta);
+      const time =
+        (ov && ov.time) || `${s.start}–${s.end || "?"}`;
+      const st =
+        (ov && ov.time ? parsePairStart(ov.time) : null) || s.start;
+      const en =
+        (ov && ov.time ? parsePairEnd(ov.time) : null) || s.end;
+      lessons.push({
+        date: s.date,
+        dayTitle: s.dayTitle || "",
+        weekId: s.weekId ?? 0,
+        weekTitle: s.weekTitle || "",
+        time,
+        start: st,
+        end: en,
+        subject: s.subject,
+        meta: (ov && ov.meta) || s.meta,
+        syncKey: s.key || `${s.date}|${st}|${s.subject}`,
+        sync: "spbu-only",
+      });
+    }
+    lessons.sort((a, b) => {
+      const c = (a.date || "").localeCompare(b.date || "");
+      if (c) return c;
+      return (toMinutes(a.start) ?? 0) - (toMinutes(b.start) ?? 0);
+    });
+    data.lessons = lessons;
   }
 
   function resolveSubjectNameForKey(key, data) {
@@ -517,32 +635,6 @@
     });
   }
 
-  function appendSyntheticLesson(data, week, day, time, subjectName, meta) {
-    const start = parsePairStart(time);
-    const end = parsePairEnd(time);
-    const les = {
-      date: day.date,
-      dayTitle: day.title,
-      weekId: week.id,
-      weekTitle: week.title,
-      time,
-      start,
-      end,
-      subject: subjectName,
-      meta: meta || "",
-      syncKey: `tg-override|${day.date}|${start}|${subjectName}`,
-      sync: "ok",
-      synthetic: true,
-    };
-    data.lessons = data.lessons || [];
-    data.lessons.push(les);
-    data.lessons.sort((a, b) => {
-      const c = (a.date || "").localeCompare(b.date || "");
-      if (c) return c;
-      return (toMinutes(a.start) ?? 0) - (toMinutes(b.start) ?? 0);
-    });
-  }
-
   function enrichScheduleWithOverrides(baseData) {
     const data = JSON.parse(JSON.stringify(baseData));
     const items = (state.overrides && state.overrides.items) || [];
@@ -552,21 +644,26 @@
       const action = it.action;
       if (action === "cancel") continue;
       if (action !== "confirm" && action !== "annotate") continue;
-      if (!it.time) continue;
 
       for (const date of it.dates || []) {
-        const keys = it.subjects || [];
-        if (!keys.length) continue;
-        for (const subjectKey of keys) {
-          if (baseLessonClaimsOverride(baseData, it, date, subjectKey)) continue;
-          const subjectName = resolveSubjectNameForKey(subjectKey, baseData);
-          const week = ensureWeekForDate(data, date);
-          const day = ensureDayInWeek(week, date);
-          insertSyntheticPair(day, it.time, subjectName, it.meta || "");
-          appendSyntheticLesson(data, week, day, it.time, subjectName, it.meta || "");
+        if (it.time) {
+          const matched = collectOverrideMatchesOnDate(data, it, date);
+          if (matched.length) {
+            applyTimedOverrideCollapse(data, it, date, matched);
+            continue;
+          }
+          const keys = it.subjects || [];
+          if (!keys.length) continue;
+          for (const subjectKey of keys) {
+            const subjectName = resolveSubjectNameForKey(subjectKey, baseData);
+            const week = ensureWeekForDate(data, date);
+            const day = ensureDayInWeek(week, date);
+            insertSyntheticPair(day, it.time, subjectName, it.meta || "");
+          }
         }
       }
     }
+    rebuildLessonsFromSchedule(data);
     return data;
   }
 
@@ -731,6 +828,7 @@
                 const start = parsePairStart(pair.time);
                 const end = parsePairEnd(pair.time);
                 return (pair.subjects || [])
+                  .filter((s) => !s._overrideHidden)
                   .map((s) => {
                     const id = lessonId({
                       date: d.date,
@@ -759,6 +857,7 @@
               .join("");
 
             const ghosts = spbuOnlyForDay(data, d.date)
+              .filter((s) => !s._overrideHidden)
               .map((s) => {
                 const id = lessonId({
                   date: s.date,
@@ -1125,7 +1224,7 @@
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker
-      .register("./sw.js?v=28")
+      .register("./sw.js?v=29")
       .then((reg) => {
         reg.update().catch(() => {});
         if (reg.waiting) {
