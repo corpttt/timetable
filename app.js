@@ -351,10 +351,14 @@
     const items = (state.overrides && state.overrides.items) || [];
     const n = String(name || "").toLowerCase().replace(/ё/g, "е");
     const blob = `${meta || ""}\n${name || ""}`;
+    const gid = state.groupId || "";
     let best = null;
+    let bestPri = -1;
     for (const it of items) {
       if (it.active === false) continue;
       if (it.dates && it.dates.length && date && !it.dates.includes(date)) continue;
+      const groups = it.groups || [];
+      if (groups.length && gid && !groups.includes(gid)) continue;
       const keys = it.subjects || [];
       const subjOk =
         !keys.length ||
@@ -366,19 +370,30 @@
           return n.includes(key);
         });
       if (!subjOk) continue;
+      // place_14: match VO subjects even if ODS meta has no address yet
       if (it.place_14) {
         const placeOk =
           /14|линия|васьк|в\.?\s*о/i.test(blob) ||
-          /алгоритм|информатик/i.test(n);
+          /алгоритм|информатик|программирован|c\+\+/i.test(n) ||
+          Boolean(it.meta);
         if (!placeOk) continue;
       }
       if (Array.isArray(it.matches) && it.matches.length) {
         const hit = it.matches.some(
-          (m) => m.date === date && String(m.name || "").toLowerCase() === n
+          (m) =>
+            m.date === date &&
+            String(m.name || "")
+              .toLowerCase()
+              .replace(/ё/g, "е") === n
         );
-        if (!hit) continue;
+        // if matches listed but none hit, still allow when meta/time annotate
+        if (!hit && !it.meta && !it.time && it.action !== "annotate") continue;
       }
-      best = it;
+      const pri = Number(it.priority) || 0;
+      if (pri >= bestPri) {
+        bestPri = pri;
+        best = it;
+      }
     }
     return best;
   }
@@ -397,35 +412,47 @@
     end,
     date,
   }) {
-    const { room, address, instructor, rest, soft } = parseMeta(meta);
     const ov = overrideForSubject(date, name, meta);
+    // TG overrides beat ODS table and Timetable site
+    const displayMeta = (ov && ov.meta) || meta;
+    const displayTime = (ov && ov.time) || time;
+    let displayStart = start;
+    let displayEnd = end;
+    if (ov && ov.time) {
+      displayStart = parsePairStart(ov.time) || start;
+      displayEnd = parsePairEnd(ov.time) || end;
+    }
+    const { room, address, instructor, rest, soft } = parseMeta(displayMeta);
     let cls = "tl-item";
     if (nearestKind === "now" && nearestKey === id) cls += " current";
     if (nearestKind === "next" && nearestKey === id) cls += " next-pair";
-    if (sync === "spbu-only") cls += " mismatch spbu-only";
-    if (sync === "local-only") cls += " mismatch local-only";
+    // hide ODS↔Timetable mismatch noise when TG override owns the card
+    const showSync = !ov;
+    if (showSync && sync === "spbu-only") cls += " mismatch spbu-only";
+    if (showSync && sync === "local-only") cls += " mismatch local-only";
     if (ov?.action === "cancel") cls += " cancelled";
-    if (ov?.action === "confirm") cls += " tg-confirm";
+    if (ov?.action === "confirm" || ov?.action === "annotate") cls += " tg-confirm";
     const syncBadge =
-      sync === "spbu-only"
+      showSync && sync === "spbu-only"
         ? '<span class="badge badge-mismatch badge-spbu-only" title="Есть в Timetable SPbU, нет в нашей таблице">только на Timetable</span>'
-        : sync === "local-only"
+        : showSync && sync === "local-only"
           ? '<span class="badge badge-mismatch badge-local-only" title="Есть в нашей таблице, нет в Timetable SPbU">только в таблице</span>'
           : "";
     const tgBadge =
       ov?.action === "cancel"
         ? `<span class="badge badge-cancel" title="${escapeHtml(ov.note || "отмена из Telegram")}">отмена</span>`
-        : ov?.action === "confirm"
-          ? `<span class="badge badge-confirm" title="${escapeHtml(ov.note || "подтверждено в Telegram")}">TG ✓</span>`
+        : ov
+          ? `<span class="badge badge-confirm" title="${escapeHtml(ov.note || "правка из Telegram")}">TG ✓</span>`
           : "";
     return `<article class="${cls}" id="${id}" style="--c:${color}"
-      data-start="${escapeHtml(start || "")}" data-end="${escapeHtml(end || "")}" data-kind="${kind || "local"}">
+      data-start="${escapeHtml(displayStart || "")}" data-end="${escapeHtml(displayEnd || "")}" data-kind="${kind || "local"}">
       <span class="tl-dot" aria-hidden="true"></span>
-      <div class="tl-time">${escapeHtml(time)}${syncBadge ? " " + syncBadge : ""}${tgBadge ? " " + tgBadge : ""}</div>
+      <div class="tl-time">${escapeHtml(displayTime)}${syncBadge ? " " + syncBadge : ""}${tgBadge ? " " + tgBadge : ""}</div>
       <div class="subj">${escapeHtml(name)}</div>
       <div class="tl-chips">
         ${roomChip(room, soft)}
         ${addressChip(address)}
+        ${instructorChip(instructor)}
         ${rest ? `<span class="chip">${escapeHtml(rest)}</span>` : ""}
         ${ov?.note ? `<span class="chip">${escapeHtml(ov.note)}</span>` : ""}
       </div>
@@ -840,7 +867,7 @@
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker
-      .register("./sw.js?v=26")
+      .register("./sw.js?v=27")
       .then((reg) => {
         reg.update().catch(() => {});
         if (reg.waiting) {
