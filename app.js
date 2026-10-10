@@ -324,6 +324,252 @@
       <span class="muted"> · ${escapeHtml(les.time)} · ${escapeHtml(les.dayTitle || "")}</span>`;
   }
 
+  const SUBJECT_KEY_LABELS = {
+    "c++": "Программирование C++",
+    "си++": "Программирование C++",
+    информатик: "Информатика",
+    алгоритм: "Алгоритмы и структуры данных",
+  };
+
+  const RU_MONTHS_GEN = [
+    "января",
+    "февраля",
+    "марта",
+    "апреля",
+    "мая",
+    "июня",
+    "июля",
+    "августа",
+    "сентября",
+    "октября",
+    "ноября",
+    "декабря",
+  ];
+
+  function subjectNameMatchesKey(name, key) {
+    const n = String(name || "").toLowerCase().replace(/ё/g, "е");
+    const k = String(key).toLowerCase();
+    if (k === "c++" || k === "си++") {
+      return n.includes("c++") || n.includes("программирован");
+    }
+    return n.includes(k);
+  }
+
+  function overrideAppliesToCurrentGroup(it) {
+    const groups = it.groups || [];
+    const gid = state.groupId || "";
+    if (groups.length && gid && !groups.includes(gid)) return false;
+    return true;
+  }
+
+  function isoAddDays(isoDate, n) {
+    const [y, m, d] = isoDate.split("-").map(Number);
+    const t = Date.UTC(y, m - 1, d + n, 12, 0, 0);
+    const dt = new Date(t);
+    return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}`;
+  }
+
+  function moscowWeekdayShort(isoDate) {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: TZ,
+      weekday: "short",
+    }).format(new Date(`${isoDate}T12:00:00`));
+  }
+
+  function formatDayTitleRu(isoDate) {
+    const weekday = new Intl.DateTimeFormat("ru-RU", {
+      timeZone: TZ,
+      weekday: "long",
+    }).format(new Date(`${isoDate}T12:00:00`));
+    const cap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    const [, mm, dd] = isoDate.split("-");
+    return `${cap} ${dd}.${mm}`;
+  }
+
+  function formatWeekTitleRu(monIso, sunIso) {
+    const [y1, m1, d1] = monIso.split("-").map(Number);
+    const [, m2, d2] = sunIso.split("-").map(Number);
+    if (m1 === m2) return `${d1}–${d2} ${RU_MONTHS_GEN[m1 - 1]} ${y1}`;
+    const [y2] = sunIso.split("-");
+    return `${d1} ${RU_MONTHS_GEN[m1 - 1]} – ${d2} ${RU_MONTHS_GEN[m2 - 1]} ${y2}`;
+  }
+
+  function mondayOfWeekContaining(isoDate) {
+    let cur = isoDate;
+    for (let i = 0; i < 7; i++) {
+      if (moscowWeekdayShort(cur) === "Mon") return cur;
+      cur = isoAddDays(cur, -1);
+    }
+    return isoDate;
+  }
+
+  function ensureWeekForDate(data, isoDate) {
+    data.weeks = data.weeks || [];
+    let week = data.weeks.find((w) => weekContainsDate(w, isoDate));
+    if (week) return week;
+    const mon = mondayOfWeekContaining(isoDate);
+    const sun = isoAddDays(mon, 6);
+    const newId =
+      data.weeks.reduce((m, w) => Math.max(m, Number(w.id) || 0), -1) + 1;
+    week = {
+      id: newId,
+      title: formatWeekTitleRu(mon, sun),
+      days: [],
+    };
+    data.weeks.push(week);
+    data.weeks.sort((a, b) => {
+      const da =
+        (a.days || []).map((d) => d.date).filter(Boolean).sort()[0] || "";
+      const db =
+        (b.days || []).map((d) => d.date).filter(Boolean).sort()[0] || "";
+      if (da && db) return da.localeCompare(db);
+      return (Number(a.id) || 0) - (Number(b.id) || 0);
+    });
+    return week;
+  }
+
+  function ensureDayInWeek(week, isoDate) {
+    week.days = week.days || [];
+    let day = week.days.find((d) => d.date === isoDate);
+    if (!day) {
+      day = { date: isoDate, title: formatDayTitleRu(isoDate), pairs: [] };
+      week.days.push(day);
+      week.days.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    }
+    return day;
+  }
+
+  function eachLessonOnDate(data, date, cb) {
+    for (const w of data.weeks || []) {
+      for (const d of w.days || []) {
+        if (d.date !== date) continue;
+        for (const pair of d.pairs || []) {
+          const start = parsePairStart(pair.time);
+          const end = parsePairEnd(pair.time);
+          for (const s of pair.subjects || []) {
+            cb({ name: s.name, meta: s.meta, time: pair.time, start, end });
+          }
+        }
+      }
+    }
+    for (const s of data.spbuOnly || []) {
+      if (s.date !== date) continue;
+      cb({
+        name: s.subject,
+        meta: s.meta,
+        time: `${s.start}–${s.end || "?"}`,
+        start: s.start,
+        end: s.end,
+      });
+    }
+  }
+
+  function baseLessonClaimsOverride(baseData, it, date, subjectKey) {
+    let claimed = false;
+    eachLessonOnDate(baseData, date, ({ name, meta }) => {
+      if (!subjectNameMatchesKey(name, subjectKey)) return;
+      const ov = overrideForSubject(date, name, meta);
+      if (ov && ov.id === it.id) claimed = true;
+    });
+    return claimed;
+  }
+
+  function resolveSubjectNameForKey(key, data) {
+    for (const les of data.lessons || []) {
+      if (subjectNameMatchesKey(les.subject, key)) return les.subject;
+    }
+    for (const w of data.weeks || []) {
+      for (const d of w.days || []) {
+        for (const pair of d.pairs || []) {
+          for (const s of pair.subjects || []) {
+            if (subjectNameMatchesKey(s.name, key)) return s.name;
+          }
+        }
+      }
+    }
+    for (const s of data.spbuOnly || []) {
+      if (subjectNameMatchesKey(s.subject, key)) return s.subject;
+    }
+    const k = String(key).toLowerCase();
+    return SUBJECT_KEY_LABELS[k] || String(key);
+  }
+
+  function insertSyntheticPair(day, time, subjectName, meta) {
+    const start = parsePairStart(time);
+    const pair = {
+      time,
+      subjects: [
+        {
+          name: subjectName,
+          meta: meta || "",
+          sync: "ok",
+          syncKey: `tg-override|${day.date}|${start}|${subjectName}`,
+          synthetic: true,
+        },
+      ],
+    };
+    day.pairs = day.pairs || [];
+    day.pairs.push(pair);
+    day.pairs.sort((a, b) => {
+      const sa = toMinutes(parsePairStart(a.time)) ?? 0;
+      const sb = toMinutes(parsePairStart(b.time)) ?? 0;
+      return sa - sb;
+    });
+  }
+
+  function appendSyntheticLesson(data, week, day, time, subjectName, meta) {
+    const start = parsePairStart(time);
+    const end = parsePairEnd(time);
+    const les = {
+      date: day.date,
+      dayTitle: day.title,
+      weekId: week.id,
+      weekTitle: week.title,
+      time,
+      start,
+      end,
+      subject: subjectName,
+      meta: meta || "",
+      syncKey: `tg-override|${day.date}|${start}|${subjectName}`,
+      sync: "ok",
+      synthetic: true,
+    };
+    data.lessons = data.lessons || [];
+    data.lessons.push(les);
+    data.lessons.sort((a, b) => {
+      const c = (a.date || "").localeCompare(b.date || "");
+      if (c) return c;
+      return (toMinutes(a.start) ?? 0) - (toMinutes(b.start) ?? 0);
+    });
+  }
+
+  function enrichScheduleWithOverrides(baseData) {
+    const data = JSON.parse(JSON.stringify(baseData));
+    const items = (state.overrides && state.overrides.items) || [];
+    for (const it of items) {
+      if (it.active === false) continue;
+      if (!overrideAppliesToCurrentGroup(it)) continue;
+      const action = it.action;
+      if (action === "cancel") continue;
+      if (action !== "confirm" && action !== "annotate") continue;
+      if (!it.time) continue;
+
+      for (const date of it.dates || []) {
+        const keys = it.subjects || [];
+        if (!keys.length) continue;
+        for (const subjectKey of keys) {
+          if (baseLessonClaimsOverride(baseData, it, date, subjectKey)) continue;
+          const subjectName = resolveSubjectNameForKey(subjectKey, baseData);
+          const week = ensureWeekForDate(data, date);
+          const day = ensureDayInWeek(week, date);
+          insertSyntheticPair(day, it.time, subjectName, it.meta || "");
+          appendSyntheticLesson(data, week, day, it.time, subjectName, it.meta || "");
+        }
+      }
+    }
+    return data;
+  }
+
   function collectAllGroups(data) {
     const set = new Set();
     for (const w of data.weeks || []) {
@@ -334,6 +580,9 @@
       }
     }
     for (const s of data.spbuOnly || []) set.add(subjectGroup(s.subject));
+    for (const les of data.lessons || []) {
+      if (les.synthetic) set.add(subjectGroup(les.subject));
+    }
     return set;
   }
 
@@ -361,14 +610,7 @@
       if (groups.length && gid && !groups.includes(gid)) continue;
       const keys = it.subjects || [];
       const subjOk =
-        !keys.length ||
-        keys.some((k) => {
-          const key = String(k).toLowerCase();
-          if (key === "c++" || key === "си++") {
-            return n.includes("c++") || n.includes("программирован");
-          }
-          return n.includes(key);
-        });
+        !keys.length || keys.some((k) => subjectNameMatchesKey(name, k));
       if (!subjOk) continue;
       // place_14: match VO subjects even if ODS meta has no address yet
       if (it.place_14) {
@@ -710,12 +952,13 @@
   }
 
   function applyData(data) {
-    state.data = data;
-    state.colorMap = buildColorMap(collectAllGroups(data));
+    const view = enrichScheduleWithOverrides(data);
+    state.data = view;
+    state.colorMap = buildColorMap(collectAllGroups(view));
     const now = moscowNow();
-    state.nearest = findNearest(data.lessons || [], now);
+    state.nearest = findNearest(view.lessons || [], now);
     renderNowHint(state.nearest);
-    renderSchedule(data, state.nearest);
+    renderSchedule(view, state.nearest);
     updateBrand();
     const main = $("#app-main");
     if (main) main.hidden = false;
@@ -755,6 +998,20 @@
       localStorage.setItem(cacheKey(state.groupId || data.groupId), raw);
     } catch (err) {
       console.warn("localStorage full?", err);
+    }
+  }
+
+  async function loadOverrides({ force = false } = {}) {
+    try {
+      const res = await fetch(OVERRIDES_URL, {
+        cache: force ? "reload" : "default",
+      });
+      if (!res.ok) throw new Error(`overrides ${res.status}`);
+      state.overrides = await res.json();
+    } catch {
+      if (!state.overrides || !state.overrides.items) {
+        state.overrides = { items: [] };
+      }
     }
   }
 
@@ -859,6 +1116,7 @@
 
   async function startWithGroup() {
     updateBrand();
+    await loadOverrides();
     const cached = readLocalCache(state.groupId);
     if (cached) applyData(cached);
     await loadSchedule();
@@ -867,7 +1125,7 @@
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker
-      .register("./sw.js?v=27")
+      .register("./sw.js?v=28")
       .then((reg) => {
         reg.update().catch(() => {});
         if (reg.waiting) {
