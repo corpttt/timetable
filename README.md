@@ -1,43 +1,37 @@
 # Timetable
 
-Personal class schedule PWA for **26.Б84-мм**.
+PWA расписания Матмеха СПбУ — группы **26.Б81–Б84-мм**.
 
 ## Phone
 
-- Расписание: https://corpttt.github.io/timetable/ — Chrome → Install / Add to Home screen.
-- Тетради (HTML): папка Google Drive **UCHEBA · Тетради** (не в этом PWA).
+https://corpttt.github.io/timetable/ — Chrome → Install / Add to Home screen.
+
+Тетради живут отдельно (Google Drive / notebooks Pages), не в этом PWA.
 
 ## Features
 
-- Colored subject timeline + **now** needle
-- Dashed border when a class exists only in local ODS or only on Timetable SPbU
-- Telegram overrides: badges **отмена** / **TG ✓** from forwarded messages
-- Light/dark theme
+- Выбор группы (Б81–Б84)
+- Цветная лента пар + игла **сейчас**
+- Пунктир, если пара только в ODS или только на Timetable SPbU
+- Правки поверх таблицы: бейджи **отмена** / **✓** из `overrides.json`
+- Светлая / тёмная тема
 
-## Update base schedule
+## Overrides через приложение Grok (телефон)
 
-```bash
-python scripts/export_schedule_json.py
-python scripts/sync_timetable_spbu.py   # optional
-python scripts/publish_timetable.py     # push to corpttt/timetable Pages
-```
+Grok — **отдельное приложение**, не Telegram.
 
-## Telegram inbox (forward messages)
+1. Открой [GROK.md](GROK.md) → скопируй блок промпта в Instructions / Custom instructions Grok.
+2. Вставь текст анонса про пары → Grok вернёт JSON (`updatedAt` + `items`).
+3. Влей ответ в `overrides.json` (замени или смержи `items`) в этом репо / в UCHEBA `расписание/app/overrides.json`.
+4. Опубликуй: из UCHEBA — `python scripts/publish_timetable.py`.
+5. На телефоне в PWA нажми **↻ Обновить**.
 
-Bots **cannot** read Telegram Saved Messages («Избранное»).  
-Use a **private chat with your bot** the same way: forward group messages there.
+Правки из overrides важнее ODS и сайта Timetable.
 
-1. Create a bot with [@BotFather](https://t.me/BotFather) → copy token  
-2. Copy `.env.example` → `.env`, set `TELEGRAM_BOT_TOKEN`  
-3. Optional: `TELEGRAM_ALLOWED_USER_IDS=<your numeric id>`  
-4. Run: `python scripts/telegram_inbox_bot.py`  
-5. Open the bot in Telegram → `/start` → forward messages about VO / 14th line  
-6. Publish: `python scripts/publish_timetable.py` (or set `TELEGRAM_AUTO_PUBLISH=1`)  
-7. On phone: open the PWA → **↻ Обновить**
-
-Dry-run without Telegram:
+## Update base schedule (UCHEBA)
 
 ```bash
-python scripts/tg_parse_cli.py "Алгоритмы завтра на 14 линии отменены"
-python scripts/tg_parse_cli.py --apply "Информатика в четверг состоится"
+python scripts/build_multi_group_schedules.py
+python scripts/sync_timetable_spbu.py   # optional badges
+python scripts/publish_timetable.py
 ```
