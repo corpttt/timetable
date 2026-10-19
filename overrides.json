@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-19T15:02:56Z",
+  "updatedAt": "2026-10-19T15:04:51Z",
   "items": [
     {
       "id": "ea9ced41",
@@ -123,6 +123,69 @@
       "matches": [],
       "createdAt": "2026-10-19T15:02:56Z",
       "active": true,
+      "priority": 100
+    },
+    {
+      "id": "a8f3b2c1",
+      "action": "exclusive_week",
+      "weekStart": "2026-10-05",
+      "weekEnd": "2026-10-11",
+      "subjects": [
+        "c++",
+        "информатик",
+        "алгоритм"
+      ],
+      "groups": [
+        "Б81",
+        "Б82",
+        "Б83",
+        "Б84"
+      ],
+      "note": "По анонсу: других пар по АСД/C++/информатике нет",
+      "active": true,
+      "createdAt": "2026-10-19T15:04:51Z",
+      "priority": 100
+    },
+    {
+      "id": "b7e4d5c6",
+      "action": "exclusive_week",
+      "weekStart": "2026-10-12",
+      "weekEnd": "2026-10-18",
+      "subjects": [
+        "c++",
+        "информатик",
+        "алгоритм"
+      ],
+      "groups": [
+        "Б81",
+        "Б82",
+        "Б83",
+        "Б84"
+      ],
+      "note": "По анонсу: других пар по АСД/C++/информатике нет",
+      "active": true,
+      "createdAt": "2026-10-19T15:04:51Z",
+      "priority": 100
+    },
+    {
+      "id": "c9a1f0e2",
+      "action": "exclusive_week",
+      "weekStart": "2026-10-19",
+      "weekEnd": "2026-10-25",
+      "subjects": [
+        "c++",
+        "информатик",
+        "алгоритм"
+      ],
+      "groups": [
+        "Б81",
+        "Б82",
+        "Б83",
+        "Б84"
+      ],
+      "note": "По анонсу: других пар по АСД/C++/информатике нет",
+      "active": true,
+      "createdAt": "2026-10-19T15:04:51Z",
       "priority": 100
     }
   ]
