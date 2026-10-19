@@ -403,9 +403,26 @@
     return isoDate;
   }
 
+  function weekCalendarSpan(week) {
+    const dates = (week.days || []).map((d) => d.date).filter(Boolean).sort();
+    if (!dates.length) return null;
+    const mon = mondayOfWeekContaining(dates[0]);
+    const sun = isoAddDays(mon, 6);
+    return { mon, sun };
+  }
+
+  function dateInWeekCalendarSpan(week, isoDate) {
+    const span = weekCalendarSpan(week);
+    if (!span) return false;
+    return span.mon <= isoDate && isoDate <= span.sun;
+  }
+
   function ensureWeekForDate(data, isoDate) {
     data.weeks = data.weeks || [];
     let week = data.weeks.find((w) => weekContainsDate(w, isoDate));
+    if (!week) {
+      week = data.weeks.find((w) => dateInWeekCalendarSpan(w, isoDate));
+    }
     if (week) return week;
     const mon = mondayOfWeekContaining(isoDate);
     const sun = isoAddDays(mon, 6);
@@ -1054,7 +1071,10 @@
       .sort();
     if (!dates.length) return false;
     if (dates.includes(isoDate)) return true;
-    return dates[0] <= isoDate && isoDate <= dates[dates.length - 1];
+    if (dates[0] <= isoDate && isoDate <= dates[dates.length - 1]) {
+      return true;
+    }
+    return dateInWeekCalendarSpan(week, isoDate);
   }
 
   function nearestDayIso(isoDate) {
@@ -1288,7 +1308,7 @@
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker
-      .register("./sw.js?v=28")
+      .register("./sw.js?v=29")
       .then((reg) => {
         reg.update().catch(() => {});
         if (reg.waiting) {
