@@ -5,6 +5,9 @@
   const OVERRIDES_URL = "./overrides.json";
   const GROUP_KEY = "ucheba-schedule-group";
   const CACHE_PREFIX = "schedule-cache-v4:";
+  const OVERRIDES_CACHE_KEY = "schedule-overrides-v1";
+  const GROUPS_CACHE_KEY = "schedule-groups-v1";
+  const FETCH_TIMEOUT_MS = 8000;
   const CACHE_KEYS_LEGACY = [
     "schedule-cache-v3",
     "schedule-cache-v2",
@@ -1184,29 +1187,73 @@
     }
   }
 
+  function readOverridesCache() {
+    try {
+      const raw = localStorage.getItem(OVERRIDES_CACHE_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (data && Array.isArray(data.items)) return data;
+    } catch (_) {}
+    return null;
+  }
+
+  function writeOverridesCache(data) {
+    try {
+      localStorage.setItem(OVERRIDES_CACHE_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.warn("localStorage full?", err);
+    }
+  }
+
+  function fetchWithTimeout(url, opts = {}, ms = FETCH_TIMEOUT_MS) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { ...opts, signal: ctrl.signal }).finally(() =>
+      clearTimeout(t)
+    );
+  }
+
   async function loadOverrides({ force = false } = {}) {
     try {
-      const res = await fetch(OVERRIDES_URL, {
-        cache: force ? "reload" : "default",
-      });
+      const res = await fetchWithTimeout(
+        OVERRIDES_URL,
+        { cache: force ? "reload" : "default" },
+        force ? 20000 : FETCH_TIMEOUT_MS
+      );
       if (!res.ok) throw new Error(`overrides ${res.status}`);
       state.overrides = await res.json();
+      writeOverridesCache(state.overrides);
     } catch {
-      if (!state.overrides || !state.overrides.items) {
+      const cached = readOverridesCache();
+      if (cached) state.overrides = cached;
+      else if (!state.overrides || !state.overrides.items) {
         state.overrides = { items: [] };
       }
     }
   }
 
-  async function loadGroupsCatalog() {
-    try {
-      const res = await fetch(GROUPS_URL, { cache: "default" });
-      if (!res.ok) throw new Error(`groups ${res.status}`);
-      const data = await res.json();
-      state.groups = data.groups || [];
-      return data;
-    } catch {
-      state.groups = [
+  function defaultGroupsCatalog() {
+    return {
+      defaultId: "Б84",
+      groups: [
+        {
+          id: "Б81",
+          name: "26.Б81-мм",
+          short: "Б81",
+          file: "schedules/Б81.json",
+        },
+        {
+          id: "Б82",
+          name: "26.Б82-мм",
+          short: "Б82",
+          file: "schedules/Б82.json",
+        },
+        {
+          id: "Б83",
+          name: "26.Б83-мм",
+          short: "Б83",
+          file: "schedules/Б83.json",
+        },
         {
           id: "Б84",
           name: "26.Б84-мм",
@@ -1214,8 +1261,46 @@
           spbuId: 459575,
           file: "schedule.json",
         },
-      ];
-      return { defaultId: "Б84", groups: state.groups };
+      ],
+    };
+  }
+
+  function readGroupsCache() {
+    try {
+      const raw = localStorage.getItem(GROUPS_CACHE_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (data && Array.isArray(data.groups) && data.groups.length) return data;
+    } catch (_) {}
+    return null;
+  }
+
+  function writeGroupsCache(data) {
+    try {
+      localStorage.setItem(GROUPS_CACHE_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.warn("localStorage full?", err);
+    }
+  }
+
+  async function loadGroupsCatalog() {
+    const cached = readGroupsCache();
+    if (cached) {
+      state.groups = cached.groups;
+    }
+
+    try {
+      const res = await fetchWithTimeout(GROUPS_URL, { cache: "default" });
+      if (!res.ok) throw new Error(`groups ${res.status}`);
+      const data = await res.json();
+      state.groups = data.groups || [];
+      writeGroupsCache(data);
+      return data;
+    } catch {
+      if (cached) return cached;
+      const fallback = defaultGroupsCatalog();
+      state.groups = fallback.groups;
+      return fallback;
     }
   }
 
@@ -1257,17 +1342,27 @@
       return;
     }
 
-    const cached = readLocalCache(group.id);
-    if (cached && !state.data) {
-      applyData(cached);
+    // Сначала рисуем из localStorage — не ждём сеть
+    if (!force) {
+      const ovCached = readOverridesCache();
+      if (ovCached) state.overrides = ovCached;
+      const cached = readLocalCache(group.id);
+      if (cached && !state.data) applyData(cached);
     }
 
     try {
+      const timeout = force ? 20000 : FETCH_TIMEOUT_MS;
       const [res, ovRes] = await Promise.all([
-        fetch(scheduleUrl(group), { cache: force ? "reload" : "default" }),
-        fetch(OVERRIDES_URL, {
-          cache: force ? "reload" : "default",
-        }).catch(() => null),
+        fetchWithTimeout(
+          scheduleUrl(group),
+          { cache: force ? "reload" : "default" },
+          timeout
+        ),
+        fetchWithTimeout(
+          OVERRIDES_URL,
+          { cache: force ? "reload" : "default" },
+          timeout
+        ).catch(() => null),
       ]);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let data = await res.json();
@@ -1276,8 +1371,9 @@
       if (ovRes && ovRes.ok) {
         try {
           state.overrides = await ovRes.json();
+          writeOverridesCache(state.overrides);
         } catch {
-          state.overrides = { items: [] };
+          /* keep previous overrides */
         }
       }
       writeLocalCache(data);
@@ -1287,7 +1383,7 @@
       const fallback = readLocalCache(group.id);
       if (fallback) {
         if (!state.data) applyData(fallback);
-        toast(force ? "Нет сети — оставлен кэш" : "Офлайн · показан кэш");
+        if (force) toast("Нет сети — оставлен кэш");
       } else {
         toast("Нет данных — открой онлайн один раз");
         console.error(err);
@@ -1299,16 +1395,19 @@
 
   async function startWithGroup() {
     updateBrand();
-    await loadOverrides();
+    // Мгновенный кадр из кэша; сеть не блокирует первый кадр
+    const ovCached = readOverridesCache();
+    if (ovCached) state.overrides = ovCached;
     const cached = readLocalCache(state.groupId);
     if (cached) applyData(cached);
-    await loadSchedule();
+    // фон: обновить JSON, не ждать
+    loadSchedule().catch(() => {});
   }
 
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker
-      .register("./sw.js?v=29")
+      .register("./sw.js?v=30")
       .then((reg) => {
         reg.update().catch(() => {});
         if (reg.waiting) {
@@ -1342,18 +1441,23 @@
     $("#btn-group")?.addEventListener("click", () => showOnboarding());
 
     registerSW();
-    await loadGroupsCatalog();
+
+    // Сразу из localStorage / дефолта — не ждём groups.json
+    const groupsCached = readGroupsCache() || defaultGroupsCatalog();
+    state.groups = groupsCached.groups;
 
     const saved = readGroupId();
     const known = state.groups.some((g) => g.id === saved);
     if (!saved || !known) {
       showOnboarding();
+      loadGroupsCatalog().catch(() => {});
     } else {
       writeGroupId(saved);
       const onboard = $("#onboarding");
       if (onboard) onboard.hidden = true;
       document.body.classList.remove("onboarding-open");
-      await startWithGroup();
+      startWithGroup();
+      loadGroupsCatalog().catch(() => {});
     }
 
     window.addEventListener("online", () => {

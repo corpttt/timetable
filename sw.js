@@ -1,13 +1,13 @@
-const CACHE = "schedule-shell-v29";
+const CACHE = "schedule-shell-v30";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css",
-  "./styles.css?v=29",
+  "./styles.css?v=30",
   "./app.js",
-  "./app.js?v=29",
+  "./app.js?v=30",
   "./theme.js",
-  "./theme.js?v=29",
+  "./theme.js?v=30",
   "./manifest.json",
   "./groups.json",
   "./schedule.json",
@@ -41,6 +41,12 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 function isLiveJson(url) {
   const p = url.pathname;
   return (
@@ -64,19 +70,43 @@ function isShellAsset(url) {
   return /\/(styles\.css|app\.js|theme\.js|sw\.js)$/i.test(p);
 }
 
+async function putBoth(cache, request, res) {
+  await cache.put(request, res.clone());
+  try {
+    const u = new URL(request.url);
+    if (u.search) {
+      await cache.put(new Request(u.origin + u.pathname), res.clone());
+    }
+  } catch (_) {}
+}
+
+/** Отдать кэш сразу, обновить в фоне — быстрый старт при медленной сети. */
+async function staleWhileRevalidate(event) {
+  const cache = await caches.open(CACHE);
+  const cached =
+    (await cache.match(event.request)) ||
+    (await cache.match(event.request, { ignoreSearch: true }));
+
+  const networkPromise = fetch(event.request, { cache: "no-cache" })
+    .then(async (res) => {
+      if (res && res.ok) await putBoth(cache, event.request, res);
+      return res;
+    })
+    .catch(() => null);
+
+  if (cached) {
+    event.waitUntil(networkPromise);
+    return cached;
+  }
+  return (await networkPromise) || Response.error();
+}
+
 async function networkFirst(event) {
   const cache = await caches.open(CACHE);
   try {
     const res = await fetch(event.request, { cache: "no-cache" });
     if (res && res.ok) {
-      await cache.put(event.request, res.clone());
-      try {
-        const u = new URL(event.request.url);
-        if (u.search) {
-          const bare = new Request(u.origin + u.pathname);
-          await cache.put(bare, res.clone());
-        }
-      } catch (_) {}
+      await putBoth(cache, event.request, res);
       return res;
     }
   } catch {
@@ -93,12 +123,14 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET") return;
 
-  if (
-    isLiveJson(url) ||
-    isShellHtml(url) ||
-    isShellAsset(url) ||
-    event.request.mode === "navigate"
-  ) {
+  // JSON расписания: кэш сразу (иначе 260 КБ с GitHub Pages тормозят старт)
+  if (isLiveJson(url)) {
+    event.respondWith(staleWhileRevalidate(event));
+    return;
+  }
+
+  // HTML / JS / CSS: network-first, чтобы ↻ и смена версии доходили
+  if (isShellHtml(url) || isShellAsset(url) || event.request.mode === "navigate") {
     event.respondWith(networkFirst(event));
     return;
   }
