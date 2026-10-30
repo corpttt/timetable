@@ -1234,24 +1234,27 @@
 
   function defaultGroupsCatalog() {
     return {
-      defaultId: "Б84",
+      defaultId: "Б83",
       groups: [
         {
           id: "Б81",
           name: "26.Б81-мм",
           short: "Б81",
+          spbuId: 459577,
           file: "schedules/Б81.json",
         },
         {
           id: "Б82",
           name: "26.Б82-мм",
           short: "Б82",
+          spbuId: 459578,
           file: "schedules/Б82.json",
         },
         {
           id: "Б83",
           name: "26.Б83-мм",
           short: "Б83",
+          spbuId: 459576,
           file: "schedules/Б83.json",
         },
         {
@@ -1259,7 +1262,7 @@
           name: "26.Б84-мм",
           short: "Б84",
           spbuId: 459575,
-          file: "schedule.json",
+          file: "schedules/Б84.json",
         },
       ],
     };
