@@ -1,16 +1,23 @@
-const CACHE = "schedule-shell-v30";
+/* Schedule PWA — offline-first shell + JSON. */
+const CACHE = "schedule-shell-v31";
+const NETWORK_MS = 2500;
+
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css",
-  "./styles.css?v=30",
+  "./styles.css?v=31",
   "./app.js",
-  "./app.js?v=30",
+  "./app.js?v=31",
   "./theme.js",
-  "./theme.js?v=30",
+  "./theme.js?v=31",
   "./manifest.json",
   "./groups.json",
   "./schedule.json",
+  "./schedules/%D0%9181.json",
+  "./schedules/%D0%9182.json",
+  "./schedules/%D0%9183.json",
+  "./schedules/%D0%9184.json",
   "./schedules/Б81.json",
   "./schedules/Б82.json",
   "./schedules/Б83.json",
@@ -21,11 +28,40 @@ const SHELL = [
   "./icons/icon-512.png",
 ];
 
+function toAbs(url) {
+  try {
+    return new URL(url, self.location.href).href;
+  } catch {
+    return url;
+  }
+}
+
+async function putAll(cache, urls) {
+  await Promise.all(
+    urls.map(async (url) => {
+      try {
+        const abs = toAbs(url);
+        const res = await fetch(abs, { cache: "reload" });
+        if (res && res.ok) {
+          await cache.put(abs, res.clone());
+          // also store without query / with decoded path variants
+          const u = new URL(abs);
+          if (u.search) {
+            await cache.put(u.origin + u.pathname, res.clone());
+          }
+        }
+      } catch (_) {
+        /* skip one failed asset — do not fail whole install */
+      }
+    })
+  );
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      await Promise.all(SHELL.map((url) => cache.add(url).catch(() => undefined)));
+      await putAll(cache, SHELL);
       await self.skipWaiting();
     })()
   );
@@ -34,9 +70,9 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))).then(
-        () => self.clients.claim()
-      )
+      Promise.all(
+        keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))
+      ).then(() => self.clients.claim())
     )
   );
 });
@@ -48,26 +84,54 @@ self.addEventListener("message", (event) => {
 });
 
 function isLiveJson(url) {
-  const p = url.pathname;
+  const p = decodeURIComponent(url.pathname);
   return (
-    p.endsWith("/schedule.json") ||
-    p.endsWith("schedule.json") ||
-    p.endsWith("/groups.json") ||
-    p.endsWith("groups.json") ||
-    p.endsWith("/overrides.json") ||
-    p.endsWith("overrides.json") ||
+    /\/(schedule|groups|overrides)\.json$/i.test(p) ||
     /\/schedules\/[^/]+\.json$/i.test(p)
   );
 }
 
-function isShellHtml(url) {
-  const p = url.pathname;
-  return /\/index\.html$/i.test(p) || /\/timetable\/?$/i.test(p);
-}
-
 function isShellAsset(url) {
   const p = url.pathname;
-  return /\/(styles\.css|app\.js|theme\.js|sw\.js)$/i.test(p);
+  return /\/(styles\.css|app\.js|theme\.js|sw\.js|manifest\.json)$/i.test(p);
+}
+
+function isAppNavigate(url) {
+  const p = url.pathname.replace(/\/+$/, "") || "/";
+  return (
+    /\/timetable$/i.test(p) ||
+    /\/index\.html$/i.test(url.pathname) ||
+    /\/timetable\/?$/i.test(url.pathname)
+  );
+}
+
+async function fromCache(request) {
+  const cache = await caches.open(CACHE);
+  const direct =
+    (await cache.match(request)) ||
+    (await cache.match(request, { ignoreSearch: true, ignoreVary: true }));
+  if (direct) return direct;
+
+  try {
+    const url = new URL(request.url);
+    const base = url.origin + url.pathname.replace(/\/index\.html$/i, "/");
+    const candidates = [
+      url.origin + url.pathname,
+      url.origin + url.pathname.replace(/\/$/, "") + "/",
+      url.origin + url.pathname.replace(/\/$/, "") + "/index.html",
+      base,
+      base.replace(/\/?$/, "/") + "index.html",
+      toAbs("./"),
+      toAbs("./index.html"),
+    ];
+    for (const href of [...new Set(candidates)]) {
+      const hit =
+        (await cache.match(href)) ||
+        (await cache.match(href, { ignoreSearch: true }));
+      if (hit) return hit;
+    }
+  } catch (_) {}
+  return null;
 }
 
 async function putBoth(cache, request, res) {
@@ -75,19 +139,27 @@ async function putBoth(cache, request, res) {
   try {
     const u = new URL(request.url);
     if (u.search) {
-      await cache.put(new Request(u.origin + u.pathname), res.clone());
+      await cache.put(u.origin + u.pathname, res.clone());
     }
   } catch (_) {}
 }
 
-/** Отдать кэш сразу, обновить в фоне — быстрый старт при медленной сети. */
+async function fetchWithTimeout(request, ms) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(request, { cache: "no-cache", signal: ctrl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+/** Cache immediately; refresh in background when possible. */
 async function staleWhileRevalidate(event) {
   const cache = await caches.open(CACHE);
-  const cached =
-    (await cache.match(event.request)) ||
-    (await cache.match(event.request, { ignoreSearch: true }));
+  const cached = await fromCache(event.request);
 
-  const networkPromise = fetch(event.request, { cache: "no-cache" })
+  const networkPromise = fetchWithTimeout(event.request, NETWORK_MS)
     .then(async (res) => {
       if (res && res.ok) await putBoth(cache, event.request, res);
       return res;
@@ -98,64 +170,38 @@ async function staleWhileRevalidate(event) {
     event.waitUntil(networkPromise);
     return cached;
   }
-  return (await networkPromise) || Response.error();
-}
 
-async function networkFirst(event) {
-  const cache = await caches.open(CACHE);
-  try {
-    const res = await fetch(event.request, { cache: "no-cache" });
-    if (res && res.ok) {
-      await putBoth(cache, event.request, res);
-      return res;
-    }
-  } catch {
-    /* offline */
+  const net = await networkPromise;
+  if (net && net.ok) return net;
+
+  if (event.request.mode === "navigate" || isAppNavigate(new URL(event.request.url))) {
+    return (
+      (await fromCache(toAbs("./index.html"))) ||
+      (await fromCache(toAbs("./"))) ||
+      new Response("<!doctype html><meta charset=utf-8><title>Офлайн</title><p>Нет кэша. Открой расписание один раз онлайн.</p>", {
+        status: 503,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      })
+    );
   }
-  return (
-    (await cache.match(event.request)) ||
-    (await cache.match(event.request, { ignoreSearch: true })) ||
-    Response.error()
-  );
+  return new Response("", { status: 503, statusText: "Offline" });
 }
 
 self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
 
-  // JSON расписания: кэш сразу (иначе 260 КБ с GitHub Pages тормозят старт)
-  if (isLiveJson(url)) {
+  if (
+    isLiveJson(url) ||
+    isShellAsset(url) ||
+    isAppNavigate(url) ||
+    event.request.mode === "navigate" ||
+    url.pathname.includes("/icons/")
+  ) {
     event.respondWith(staleWhileRevalidate(event));
     return;
   }
 
-  // HTML / JS / CSS: network-first, чтобы ↻ и смена версии доходили
-  if (isShellHtml(url) || isShellAsset(url) || event.request.mode === "navigate") {
-    event.respondWith(networkFirst(event));
-    return;
-  }
-
-  event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      const hit = await cache.match(event.request, { ignoreSearch: true });
-      if (hit) return hit;
-      try {
-        const res = await fetch(event.request);
-        if (res && res.ok && url.origin === self.location.origin) {
-          cache.put(event.request, res.clone());
-        }
-        return res;
-      } catch {
-        if (event.request.mode === "navigate") {
-          return (
-            (await cache.match("./index.html")) ||
-            (await cache.match("./")) ||
-            Response.error()
-          );
-        }
-        return Response.error();
-      }
-    })()
-  );
+  event.respondWith(staleWhileRevalidate(event));
 });

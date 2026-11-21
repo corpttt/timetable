@@ -1410,7 +1410,7 @@
   function registerSW() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker
-      .register("./sw.js?v=30")
+      .register("./sw.js?v=31")
       .then((reg) => {
         reg.update().catch(() => {});
         if (reg.waiting) {
@@ -1431,14 +1431,14 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     $("#btn-refresh")?.addEventListener("click", async () => {
+      // Do NOT wipe Cache Storage — that kills offline until refill finishes.
       try {
-        const keys = await caches.keys();
-        await Promise.all(keys.map((k) => caches.delete(k)));
         const reg = await navigator.serviceWorker.getRegistration();
         await reg?.update();
+        if (reg?.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
       } catch (_) {}
       await loadSchedule({ force: true });
-      location.reload();
+      toast(navigator.onLine ? "Обновлено" : "Офлайн — кэш не трогали");
     });
     $("#fab-now")?.addEventListener("click", () => jumpToNow(true));
     $("#btn-group")?.addEventListener("click", () => showOnboarding());
